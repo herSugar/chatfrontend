@@ -1,72 +1,80 @@
-import { useState } from 'react';
+// src/hooks/useChat.ts
+import { useState, useCallback } from 'react';
+import { ChatMessage } from '../types';
 import { sendMessageToBackend, uploadDocumentToBackend } from '../utils/api';
-import { ChatMessage, ChatResponse, UploadResponse } from '../types';
 
-export default function useChat() {
+const useChat = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const sendMessage = async (content: string): Promise<void> => {
-    const userMessage: ChatMessage = { 
-      role: 'user', 
-      content,
-      timestamp: new Date()
-    };
-    
-    setMessages(prev => [...prev, userMessage]);
+  const sendMessage = useCallback(async (message: string) => {
     setLoading(true);
     setError(null);
     
     try {
-      const response: ChatResponse = await sendMessageToBackend(content, messages);
-      
-      const assistantMessage: ChatMessage = {
-        role: 'assistant',
-        content: response.answer,
-        sources: response.sources || [],
+      // Add user message immediately
+      const userMessage: ChatMessage = {
+        role: 'user',
+        content: message,
         timestamp: new Date()
       };
       
-      setMessages(prev => [...prev, assistantMessage]);
+      setMessages(prev => [...prev, userMessage]);
+
+      // Send to backend
+      const response = await sendMessageToBackend(message, messages);
+      
+      // Add bot response
+      const botMessage: ChatMessage = {
+        role: 'assistant',
+        content: response.answer,
+        timestamp: new Date()
+      };
+      
+      setMessages(prev => [...prev, botMessage]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Terjadi kesalahan saat memproses permintaan');
-      console.error('Error sending message:', err);
+      setError(err instanceof Error ? err.message : 'Failed to send message');
     } finally {
       setLoading(false);
     }
-  };
+  }, [messages]);
 
-  const uploadDocument = async (file: File): Promise<void> => {
+  const uploadDocument = useCallback(async (file: File) => {
     setLoading(true);
     setError(null);
     
     try {
-      const response: UploadResponse = await uploadDocumentToBackend(file);
-      setMessages(prev => [...prev, {
-        role: 'system',
-        content: `Dokumen "${file.name}" berhasil diunggah dan siap digunakan untuk referensi.`,
+      const response = await uploadDocumentToBackend(file);
+      
+      // Add bot response from document processing
+      const botMessage: ChatMessage = {
+        role: 'assistant',
+        content: response.message || 'I have processed your document',
         timestamp: new Date()
-      }]);
+      };
+      
+      setMessages(prev => [...prev, botMessage]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Gagal mengunggah dokumen');
-      console.error('Error uploading document:', err);
+      setError(err instanceof Error ? err.message : 'Failed to upload document');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const clearConversation = (): void => {
+  const clearConversation = useCallback(() => {
     setMessages([]);
     setError(null);
-  };
+  }, []);
 
   return {
     messages,
     loading,
     error,
     sendMessage,
-    clearConversation,
-    uploadDocument
+    uploadDocument,
+    clearConversation
   };
-}
+};
+
+export default useChat;
