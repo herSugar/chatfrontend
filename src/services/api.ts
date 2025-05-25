@@ -1,7 +1,7 @@
 import axios from "axios";
 
 // ========== Konfigurasi Axios ==========
-const api = axios.create({
+export const api = axios.create({
   baseURL: "http://localhost:8000/",
   headers: {
     "Content-Type": "application/json",
@@ -24,24 +24,37 @@ const ENDPOINTS = {
     `/api/history/${googleId}/${sessionId}/messages`,
   HEALTH_CHECK: "/health",
 };
+export const loginWithGoogleToken = async (firebaseIdToken: string) => {
+  // Kirim token Firebase ke backend untuk verifikasi dan ambil info user
+  const res = await api.post(ENDPOINTS.LOGIN, { token: firebaseIdToken });
 
-// ========== Fungsi API ==========
-export const askAgent = async (message: string) => {
-  const res = await api.post(ENDPOINTS.ASK_AGENT, { message });
-  return res.data;
-};
+  // Simpan token Firebase ke localStorage (karena ini yang dipakai untuk auth API berikutnya)
+  localStorage.setItem("auth_token", firebaseIdToken); // Penting untuk API seperti /ask
 
-export const loginWithGoogleToken = async (token: string) => {
-  const res = await api.post(ENDPOINTS.LOGIN, { token });
-
-  const accessToken = res.data.access_token || res.data.token; // sesuaikan dengan struktur respons backend
-  if (accessToken) {
-    localStorage.setItem("auth_token", accessToken);
-    api.defaults.headers.common["Authorization"] = `Bearer ${accessToken}`;
+  // Simpan email pengguna untuk keperluan frontend
+  if (res.data.user?.email) {
+    localStorage.setItem("user_email", res.data.user.email);
   }
 
   return res.data;
 };
+
+
+// ========== Fungsi API ==========
+export const askAgent = async (query: string, sessionId?: string) => {
+  const email = localStorage.getItem("user_email");
+  if (!email) throw new Error("Email tidak ditemukan. Harap login ulang.");
+
+  const body = {
+    email,
+    query,
+    session_id: sessionId || null,
+  };
+
+  const res = await api.post(ENDPOINTS.ASK_AGENT, body);
+  return res.data;
+};
+
 
 export const saveChatHistory = async (payload: any) => {
   const res = await api.post(ENDPOINTS.SAVE_HISTORY, payload);
