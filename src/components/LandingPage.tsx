@@ -151,7 +151,7 @@ const LandingPage: React.FC = () => {
                   <div className="absolute -inset-1 bg-gradient-to-r from-blue-400/50 to-purple-400/50 rounded-lg opacity-20 animate-pulse"></div>
                   
                   <button
-                    onClick={() => navigate('/chat')}
+                    onClick={() => navigate('/login')}
                     className="relative px-12 py-4 bg-white text-indigo-800 rounded-lg font-bold 
                              hover:bg-opacity-90 transition-all duration-300 shadow-lg hover:shadow-2xl 
                              transform hover:scale-110 hover:-translate-y-2 z-10
