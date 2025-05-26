@@ -32,37 +32,37 @@ export default function InputArea({ onSend, onClear, onUpload }: InputAreaProps)
   return (
     <div className="flex space-x-2">
       <input
-        type="text"
-        placeholder="Type your message..."
-        className="flex-1 p-2 border rounded"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        onKeyDown={handleKeyDown}
-        disabled={false}
+      type="text"
+      placeholder="Type your message..."
+      className="flex-1 p-2 border border-white rounded bg-transparent text-white "
+      value={input}
+      onChange={(e) => setInput(e.target.value)}
+      onKeyDown={handleKeyDown}
+      disabled={false}
       />
       <button
-        onClick={handleSend}
-        className="bg-indigo-600 text-white px-4 rounded hover:bg-indigo-700"
+      onClick={handleSend}
+      className="bg-transparent border border-white text-white px-4 rounded hover:bg-white hover:text-black transition"
       >
-        Send
+      Send
       </button>
       <button
-        onClick={onClear}
-        className="bg-red-600 text-white px-4 rounded hover:bg-red-700"
+      onClick={onClear}
+      className="bg-transparent border border-white text-white px-4 rounded hover:bg-white hover:text-black transition"
       >
-        Clear
+      Clear
       </button>
       <label
-        htmlFor="upload-file"
-        className="bg-gray-300 px-4 rounded cursor-pointer hover:bg-gray-400"
+      htmlFor="upload-file"
+      className="bg-transparent border border-white text-white px-4 rounded cursor-pointer hover:bg-white hover:text-black transition"
       >
-        Upload
+      Upload
       </label>
       <input
-        id="upload-file"
-        type="file"
-        className="hidden"
-        onChange={handleFileChange}
+      id="upload-file"
+      type="file"
+      className="hidden"
+      onChange={handleFileChange}
       />
     </div>
   );

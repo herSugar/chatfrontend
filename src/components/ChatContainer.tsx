@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { useChat } from "../hooks/useChat";
 import InputArea from "./InputArea";
+import Sidebar from "./Sidebar";
 
 type ChatMessage = {
   sender: "You" | "Agent";
@@ -38,7 +39,7 @@ export default function ChatContainer() {
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-screen w-full bg-white relative overflow-hidden">
+    <div className="flex flex-col h-screen w-full  relative overflow-hidden">
       {/* Sidebar */}
       <div
         className="fixed left-0 top-0 bottom-0 w-64 text-white p-1 shadow-lg"
@@ -46,6 +47,7 @@ export default function ChatContainer() {
           background: "linear-gradient(to bottom, #7c3aed, #301A61)",
         }}
       >
+        <Sidebar />
         {/* Sidebar content sama seperti kamu punya */}
       </div>
 
@@ -63,7 +65,7 @@ export default function ChatContainer() {
             flex: 1,
             overflow: "auto",
             padding: "24px",
-            background: "linear-gradient(to bottom, #7c3aed, #301A61)",
+            // background: "linear-gradient(to bottom, #7c3aed, #301A61)",
             position: "relative",
           }}
         >
@@ -157,13 +159,7 @@ export default function ChatContainer() {
             </div>
 
             <div
-              style={{
-                position: "sticky",
-                bottom: 0,
-                width: "100%",
-                padding: "16px 16px 12px",
-                backgroundColor: "white",
-              }}
+              
             >
               <InputArea
                 onSend={sendMessage}

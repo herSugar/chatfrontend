@@ -10,7 +10,7 @@ import RegisterPage from "./pages/RegisterPage";
 const App: React.FC = () => {
   return (
     <Router>
-      <div className="app-container">
+      <div className="app-container bg-gradient-to-br from-indigo-900 to-purple-800">
         <Toaster position="top-center" />
         <Routes>
           <Route path="/" element={<HomePage />} />
