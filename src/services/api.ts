@@ -13,15 +13,15 @@ const ENDPOINTS = {
   ASK_AGENT: "/api/ask",
   LOGIN: "/auth/login",
   SAVE_HISTORY: "/api/history/save",
-  GET_USER_HISTORY: (googleId: string) => `/api/history/${googleId}`,
-  GET_SESSION: (googleId: string, sessionId: string) =>
-    `/api/history/${googleId}/${sessionId}`,
-  UPDATE_SESSION: (googleId: string, sessionId: string) =>
-    `/api/history/${googleId}/${sessionId}`,
-  DELETE_SESSION: (googleId: string, sessionId: string) =>
-    `/api/history/${googleId}/${sessionId}`,
-  ADD_MESSAGE: (googleId: string, sessionId: string) =>
-    `/api/history/${googleId}/${sessionId}/messages`,
+  GET_USER_HISTORY: (firebaseUid: string) => `/api/history/${firebaseUid}`,
+  GET_SESSION: (firebaseUid: string, sessionId: string) =>
+    `/api/history/${firebaseUid}/${sessionId}`,
+  UPDATE_SESSION: (firebaseUid: string, sessionId: string) =>
+    `/api/history/${firebaseUid}/${sessionId}`,
+  DELETE_SESSION: (firebaseUid: string, sessionId: string) =>
+    `/api/history/${firebaseUid}/${sessionId}`,
+  ADD_MESSAGE: (firebaseUid: string, sessionId: string) =>
+    `/api/history/${firebaseUid}/${sessionId}/messages`,
   HEALTH_CHECK: "/health",
 };
 export const loginWithGoogleToken = async (firebaseIdToken: string) => {
@@ -34,6 +34,10 @@ export const loginWithGoogleToken = async (firebaseIdToken: string) => {
   // Simpan email pengguna untuk keperluan frontend
   if (res.data.user?.email) {
     localStorage.setItem("user_email", res.data.user.email);
+  }
+
+  if (res.data.user?.firebase_uid) {
+    localStorage.setItem("firebase_uid", res.data.user.firebase_uid);
   }
 
   return res.data;
@@ -61,32 +65,32 @@ export const saveChatHistory = async (payload: any) => {
   return res.data;
 };
 
-export const getUserHistory = async (googleId: string) => {
-  const res = await api.get(ENDPOINTS.GET_USER_HISTORY(googleId));
+export const getUserHistory = async (firebaseUid: string) => {
+  const res = await api.get(ENDPOINTS.GET_USER_HISTORY(firebaseUid));
   return res.data;
 };
 
-export const getSession = async (googleId: string, sessionId: string) => {
-  const res = await api.get(ENDPOINTS.GET_SESSION(googleId, sessionId));
+export const getSession = async (firebaseUid: string, sessionId: string) => {
+  const res = await api.get(ENDPOINTS.GET_SESSION(firebaseUid, sessionId));
   return res.data;
 };
 
-export const updateSession = async (googleId: string, sessionId: string, payload: any) => {
-  const res = await api.put(ENDPOINTS.UPDATE_SESSION(googleId, sessionId), payload);
+export const updateSession = async (firebaseUid: string, sessionId: string, payload: any) => {
+  const res = await api.put(ENDPOINTS.UPDATE_SESSION(firebaseUid, sessionId), payload);
   return res.data;
 };
 
-export const deleteSession = async (googleId: string, sessionId: string) => {
-  const res = await api.delete(ENDPOINTS.DELETE_SESSION(googleId, sessionId));
+export const deleteSession = async (firebaseUid: string, sessionId: string) => {
+  const res = await api.delete(ENDPOINTS.DELETE_SESSION(firebaseUid, sessionId));
   return res.data;
 };
 
 export const addMessageToSession = async (
-  googleId: string,
+  firebaseUid: string,
   sessionId: string,
   message: any
 ) => {
-  const res = await api.post(ENDPOINTS.ADD_MESSAGE(googleId, sessionId), message);
+  const res = await api.post(ENDPOINTS.ADD_MESSAGE(firebaseUid, sessionId), message);
   return res.data;
 };
 
