@@ -22,6 +22,8 @@ const HistoryPage = () => {
   const [loading, setLoading] = useState(false);
   const historyEndRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate(); 
+  
+  // const [isCollapsed, setIsCollapsed] = useState(false);
   const scrollToBottom = () => {
     historyEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -85,58 +87,92 @@ const HistoryPage = () => {
     return lastAgent ? lastAgent.content.slice(0, 150) + "..." : "Tidak ada ringkasan.";
   };
 
+  const [isCollapsed, setIsCollapsed] = useState(false);
   useEffect(() => {
     fetchHistory();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden">
+    <div className="flex h-screen bg-[#7c3aed] overflow-hidden">
       {/* Sidebar */}
+      <Sidebar
+      isCollapsed={isCollapsed}
+      onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
+      />
+
+      {/* Main content area */}
       <div
-        className="fixed left-0 top-0 bottom-0 w-64 text-white p-1 shadow-lg z-10"
-        style={{
-          background: "linear-gradient(to bottom, #7c3aed, #301A61)",
-        }}
+      className={`
+        flex-1 flex flex-col overflow-hidden
+        transition-all duration-300 ease-in-out
+        ${isCollapsed ? 'ml-0' : 'ml-48'}
+        bg-gradient-to-b from-[#7c3aed] to-[#312e81]
+      `}
       >
-        <Sidebar />
+      {/* Navbar with toggle button */}
+      <div className="[&>nav]:!relative [&>nav]:!top-auto">
+        {/* You can replace this with your Navbar component if available */}
+        <div className="flex items-center p-4">
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="p-2 rounded-lg hover:bg-indigo-600 transition-colors text-white"
+          aria-label="Toggle sidebar"
+        >
+          ☰
+        </button>
+        <h1 className="ml-4 text-2xl font-bold text-white">Riwayat Chat</h1>
+        </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 ml-64 p-8 overflow-y-auto">
-        <h1 className="text-2xl font-bold mb-4 text-white">Riwayat Chat</h1>
-        {loading ? (
-          <p>Memuat riwayat...</p>
-        ) : history.length === 0 ? (
-          <p>Tidak ada riwayat.</p>
-        ) : (
-          <div className="space-y-6">
+      {/* History content */}
+      <div className="flex-1 overflow-y-auto bg-gradient-to-b from-[#7c3aed] to-[#312e81]">
+        <div className="h-full flex flex-col">
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-4xl mx-auto h-full flex flex-col">
+          {loading ? (
+            <div className="flex-1 flex items-center justify-center text-white text-lg">
+            Memuat riwayat...
+            </div>
+          ) : history.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center text-white text-lg">
+            Tidak ada riwayat.
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4 w-full">
             {history.map((session) => (
               <div
-          key={session._id}
-          className="relative border border-white p-4 rounded shadow cursor-pointer hover:bg-white/10 transition"
-          style={{ background: "rgba(255,255,255,0.08)", color: "white" }}
-          onClick={() => navigate(`/chat/${session.session_id}`)} // Navigasi ke halaman chat
-        >
-                <button
-                  onClick={() => handleDeleteSession(session.session_id)}
-                  className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white px-2 py-1 text-xs rounded"
-                >
-                  Hapus
-                </button>
-                <p className="text-sm mb-1">
-                  <strong>Waktu:</strong>{" "}
-                  {new Date(session.timestamp).toLocaleString()}
-                </p>
-                <p>
-                  <strong>Ringkasan:</strong>{" "}
-                  {getSessionSummary(session.messages)}
-                </p>
+              key={session._id}
+              className="relative border border-white p-4 rounded shadow cursor-pointer hover:bg-white/10 transition"
+              style={{ background: "rgba(255,255,255,0.08)", color: "white" }}
+              onClick={() => navigate(`/chat/${session.session_id}`)}
+              >
+              <button
+                onClick={e => {
+                e.stopPropagation();
+                handleDeleteSession(session.session_id);
+                }}
+                className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white px-2 py-1 text-xs rounded"
+              >
+                Hapus
+              </button>
+              <p className="text-sm mb-1">
+                <strong>Waktu:</strong>{" "}
+                {new Date(session.timestamp).toLocaleString()}
+              </p>
+              <p>
+                <strong>Ringkasan:</strong>{" "}
+                {getSessionSummary(session.messages)}
+              </p>
               </div>
             ))}
+            </div>
+          )}
+          <div ref={historyEndRef} />
           </div>
-        )}
-        <div ref={historyEndRef} />
+        </div>
+        </div>
+      </div>
       </div>
     </div>
   );

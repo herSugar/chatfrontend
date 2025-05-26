@@ -1,57 +1,125 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { getSession } from "../services/api"; // pastikan sudah impor
-import { api } from "../services/api";
+// import React, { useEffect, useRef, useState } from 'react';
+// import { api } from '../services/api';
 
-type Message = {
-  role: string;
-  content: string;
-  timestamp: string;
-};
+// const ChatContainer = () => {
+//   const [query, setQuery] = useState("");
+//   const [chatLog, setChatLog] = useState<{ sender: string; text: string }[]>([]);
+//   const [loading, setLoading] = useState(false);
+//   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
-const ChatPage = () => {
-  const { sessionId } = useParams<{ sessionId: string }>();
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
+//   const scrollToBottom = () => {
+//     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+//   };
 
-  useEffect(() => {
-    const fetchSession = async () => {
-      try {
-        const token = localStorage.getItem("auth_token");
-        const firebaseUid = localStorage.getItem("firebase_uid");
+//   useEffect(() => {
+//     scrollToBottom();
+//   }, [chatLog]);
 
-        if (!token || !firebaseUid) return;
+//   const sendMessage = async () => {
+//     if (!query.trim()) return;
 
-        api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-        const session = await getSession(firebaseUid, sessionId || "");
-        setMessages(session.messages || []);
-      } catch (err) {
-        console.error("Gagal memuat session:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+//     const token = localStorage.getItem("auth_token");
+//     const userEmail = localStorage.getItem("user_email");
 
-    fetchSession();
-  }, [sessionId]);
+//     if (!token || !userEmail) {
+//       alert("Kredensial tidak ditemukan. Silakan login terlebih dahulu.");
+//       return;
+//     }
 
-  return (
-    <div className="p-6 text-white">
-      <h1 className="text-2xl font-bold mb-4">Detail Chat</h1>
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <div className="space-y-3">
-          {messages.map((msg, idx) => (
-            <div key={idx} className="p-3 rounded bg-white/10">
-              <p><strong>{msg.role}</strong> ({new Date(msg.timestamp).toLocaleString()}):</p>
-              <p>{msg.content}</p>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+//     if (!api.defaults.headers.common["Authorization"]) {
+//       api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+//     }
+
+//     setChatLog((prev) => [...prev, { sender: "You", text: query }]);
+//     setLoading(true);
+
+//     try {
+//       const res = await api.post("/api/ask", {
+//         query,
+//         email: userEmail,
+//         session_id: "",
+//       });
+
+//       const reply = res.data.response;
+//       setChatLog((prev) => [...prev, { sender: "Agent", text: reply }]);
+//     } catch (err) {
+//       console.error(err);
+//       setChatLog((prev) => [...prev, { sender: "Agent", text: "Terjadi kesalahan saat mengirim pesan." }]);
+//     } finally {
+//       setQuery("");
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+//     if (e.key === "Enter" && !loading) {
+//       sendMessage();
+//     }
+//   };
+
+//   return (
+//     <div style={{ padding: "2rem", maxWidth: "600px", margin: "0 auto" }}>
+//       <h2>Chat dengan Travel Agent</h2>
+//       <div
+//         style={{
+//           border: "1px solid #ccc",
+//           padding: "1rem",
+//           borderRadius: "8px",
+//           minHeight: "300px",
+//           maxHeight: "400px",
+//           overflowY: "auto",
+//           backgroundColor: "#f9f9f9",
+//         }}
+//       >
+//         {chatLog.map((msg, i) => (
+//           <div key={i} style={{ marginBottom: "1rem" }}>
+//             <strong>{msg.sender}:</strong> <span>{msg.text}</span>
+//           </div>
+//         ))}
+//         {loading && <p><em>Agent is typing...</em></p>}
+//         <div ref={chatEndRef} />
+//       </div>
+//       <div style={{ marginTop: "1rem", display: "flex", gap: "0.5rem" }}>
+//         <input
+//           type="text"
+//           placeholder="Tulis pertanyaan..."
+//           value={query}
+//           onChange={(e) => setQuery(e.target.value)}
+//           onKeyDown={handleKeyDown}
+//           disabled={loading}
+//           style={{ flex: 1, padding: "0.5rem", borderRadius: "4px", border: "1px solid #ccc" }}
+//         />
+//         <button
+//           onClick={sendMessage}
+//           disabled={loading}
+//           style={{
+//             padding: "0.5rem 1rem",
+//             backgroundColor: loading ? "#ccc" : "#8B5CF6",
+//             color: "#fff",
+//             border: "none",
+//             borderRadius: "4px",
+//             cursor: loading ? "not-allowed" : "pointer",
+//           }}
+//         >
+//           {loading ? "Mengirim..." : "Kirim"}
+//         </button>
+//       </div>
+//     </div>
+//   );
+// };
+
+// const ChatPage: React.FC = () => {
+//   return <ChatContainer />;
+// };
+
+// export default ChatPage;
+
+// src/pages/ChatPage.tsx
+import React from 'react';
+import ChatContainer from '../components/ChatContainer';
+
+const ChatPage: React.FC = () => {
+  return <ChatContainer />;
 };
 
 export default ChatPage;

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-
+import { useNavigate } from 'react-router-dom';
 interface SidebarProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
@@ -13,15 +13,17 @@ interface MenuItem {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
-  const [activeItem, setActiveItem] = useState<string>('chat');
+    const [activeItem, setActiveItem] = useState<string>('chat');
+    const navigate = useNavigate();
 
   const menuItems: MenuItem[] = [
     {
       id: 'chat',
       label: 'New Chat',
       icon: '💬',
-      onClick: () => {
-        setActiveItem('chat');
+          onClick: () => {
+              setActiveItem('chat');
+              navigate('/chat');
         console.log('New Chat clicked');
       }
     },
@@ -29,8 +31,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
       id: 'history',
       label: 'Chat History',
       icon: '📋',
-      onClick: () => {
-        setActiveItem('history');
+        onClick: () => {
+            setActiveItem('history');
+            navigate('/history');
         console.log('Chat History clicked');
       }
     },
