@@ -19,6 +19,7 @@ const Message: React.FC<MessageProps> = ({ message, isLast }) => {
             : 'bg-white/10 backdrop-blur-sm text-white border border-white/20'
         }`}
       >
+        
         {/* Message content */}
         <div className="whitespace-pre-wrap">{message.content}</div>
         
