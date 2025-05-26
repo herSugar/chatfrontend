@@ -97,7 +97,7 @@ const LoginPage = () => {
         </div>
         
       <div className="bg-gradient-to-br from-indigo-900 to-purple-800 shadow-xl rounded-2xl p-8 w-full max-w-md z-50 ">
-        <div className="flex justify-center "><img src="image/logos.png" alt="logo" className="w-80 h-auto"/></div>
+        <div className="flex justify-center "><img src="image/logop.png" alt="logo" className="w-80 h-auto"/></div>
         
 
         

@@ -30,15 +30,15 @@ const Navbar: React.FC<NavbarProps> = ({ transparentOnTop = true }) => {
     <nav 
       className={`fixed w-full z-50 transition-all duration-300 ${
         isScrolled 
-          ? 'bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200/50' 
+          ? 'bg-white/5 backdrop-blur-sm shadow-sm border-b border-gray-200/50' 
           : 'bg-transparent'
       }`}
     >
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <div className="text-xl font-bold text-white">
-            PITU<span className="text-blue-400">AI</span>
+          <div className="text-xl font-bold text-white ">
+            BALI<span className="text-purple-400">PITU</span>
           </div>
           
           {/* Desktop Navigation */}
@@ -86,7 +86,7 @@ const Navbar: React.FC<NavbarProps> = ({ transparentOnTop = true }) => {
 
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden bg-white/95 backdrop-blur-sm">
+        <div className="md:hidden bg-white/5 backdrop-blur-sm">
           {tabs.map((tab) => (
             <button
               key={tab}
@@ -104,7 +104,6 @@ const Navbar: React.FC<NavbarProps> = ({ transparentOnTop = true }) => {
             </button>
           ))}
           
-          {/* Mobile Book Demo Button */}
         </div>
       )}
     </nav>
