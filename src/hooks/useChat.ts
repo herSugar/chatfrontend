@@ -1,80 +1,78 @@
-// src/hooks/useChat.ts
-import { useState, useCallback } from 'react';
-import { ChatMessage } from '../types';
-import { sendMessageToBackend, uploadDocumentToBackend } from '../utils/api';
+import { useState } from "react";
+import { api } from "../services/api";
 
-const useChat = () => {
+export type ChatMessage = {
+  sender: "You" | "Agent";
+  text: string;
+  timestamp?: Date;
+};
+
+export function useChat() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const sendMessage = useCallback(async (message: string) => {
+  const sendMessage = async (query: string) => {
+    if (!query.trim()) return;
+
+    const token = localStorage.getItem("auth_token");
+    const userEmail = localStorage.getItem("user_email");
+    const sessionId = localStorage.getItem("chat_session_id");
+
+    if (!token || !userEmail) {
+      setError("Kredensial tidak ditemukan. Silakan login terlebih dahulu.");
+      return;
+    } 
+
+    
+    if (!api.defaults.headers.common["Authorization"]) {
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    }
+
+    const newMessage: ChatMessage = { sender: "You", text: query, timestamp: new Date() };
+    setMessages((prev) => [...prev, newMessage]);
     setLoading(true);
     setError(null);
-    
-    try {
-      // Add user message immediately
-      const userMessage: ChatMessage = {
-        role: 'user',
-        content: message,
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, userMessage]);
 
-      // Send to backend
-      const response = await sendMessageToBackend(message, messages);
-      
-      // Add bot response
-      const botMessage: ChatMessage = {
-        role: 'assistant',
-        content: response.answer,
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, botMessage]);
+    try {
+      const res = await api.post("/api/ask", {
+        query,
+        email: userEmail,
+        session_id: sessionId || "",
+      });
+
+      if (!sessionId && res.data.session_id) {
+        localStorage.setItem("chat_session_id", res.data.session_id);
+      }
+
+      const reply: ChatMessage = { sender: "Agent", text: res.data.response, timestamp: new Date() };
+      setMessages((prev) => [...prev, reply]);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send message');
+      console.error(err);
+      setError("Terjadi kesalahan saat mengirim pesan.");
+      setMessages((prev) => [...prev, { sender: "Agent", text: "Terjadi kesalahan saat mengirim pesan.", timestamp: new Date() }]);
     } finally {
       setLoading(false);
     }
-  }, [messages]);
+  };
 
-  const uploadDocument = useCallback(async (file: File) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await uploadDocumentToBackend(file);
-      
-      // Add bot response from document processing
-      const botMessage: ChatMessage = {
-        role: 'assistant',
-        content: response.message || 'I have processed your document',
-        timestamp: new Date()
-      };
-      
-      setMessages(prev => [...prev, botMessage]);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to upload document');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const clearConversation = useCallback(() => {
+  const clearConversation = () => {
+    localStorage.removeItem("chat_session_id");
     setMessages([]);
     setError(null);
-  }, []);
+  };
+
+  const uploadDocument = (file: File) => {
+    // Implementasi upload dokumen (jika perlu)
+    console.log("Uploading document", file);
+  };
 
   return {
     messages,
     loading,
     error,
     sendMessage,
+    clearConversation,
     uploadDocument,
-    clearConversation
   };
-};
-
-export default useChat;
+}
