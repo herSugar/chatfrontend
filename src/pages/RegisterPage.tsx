@@ -6,6 +6,7 @@ import {
 } from "firebase/auth";
 import { auth } from "../services/firebaseConfig";
 import { FcGoogle } from "react-icons/fc";
+import { FaGithub, FaEnvelope } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { loginWithGoogleToken } from "../services/api"; // sesuaikan path
 
@@ -42,13 +43,63 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-900 to-purple-800 p-5">
-      <div className="w-full max-w-md bg-gradient-to-br from-indigo-900 to-purple-800 rounded-lg shadow-lg drop-shadow-white p-8">
+    /* Hero Section with 3D Background */
+    <div className="flex-1 relative bg-gradient-to-br from-indigo-900 to-purple-800 flex flex-col items-center justify-center p-4 min-h-screen text-center overflow-hidden">
+      {/* Animated 3D Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Floating Geometric Shapes */}
+        <div
+          className="absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-full animate-bounce"
+          style={{ animationDelay: "0s", animationDuration: "3s" }}
+        ></div>
+        <div
+          className="absolute top-40 right-20 w-16 h-16 bg-blue-400/20 rounded-lg rotate-45 animate-pulse"
+          style={{ animationDelay: "1s" }}
+        ></div>
+        <div
+          className="absolute bottom-40 left-20 w-12 h-12 bg-purple-300/15 rounded-full animate-bounce"
+          style={{ animationDelay: "2s", animationDuration: "4s" }}
+        ></div>
+        <div
+          className="absolute bottom-20 right-10 w-24 h-24 bg-indigo-300/10 rounded-full animate-pulse"
+          style={{ animationDelay: "0.5s" }}
+        ></div>
+
+        {/* Animated Grid Pattern */}
+        <div className="absolute inset-0 opacity-20">
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundImage:
+                "linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)",
+              backgroundSize: "50px 50px",
+              animation: "gridMove 20s linear infinite",
+            }}
+          ></div>
+        </div>
+
+        {/* Floating Particles */}
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-2 h-2 bg-white/20 rounded-full animate-pulse"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 3}s`,
+              animationDuration: `${2 + Math.random() * 3}s`,
+            }}
+          ></div>
+        ))}
+      </div>
+
+      {/* Glassmorphism Card Container */}
+      <div className="relative z-10 backdrop-blur-sm bg-white/5 rounded-3xl p-8 border border-white/10 shadow-2xl w-6xs max-w-6xl mx-4 lg:mx-auto">
         <h1 className="text-2xl text-white font-bold text-center mb-2 ">
           Create Your Account
         </h1>
         <p className="text-gray-300 text-center mb-6">
-          Set your password for BaliPitu to continue
+          Set your Account for BaliPitu to continue
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -102,13 +153,14 @@ const RegisterPage: React.FC = () => {
               required
             />
           </div>
-
-          <button
-            type="submit"
-            className="w-full py-3 px-4 bg-white hover:bg-purple-700 hover:text-white  text-purple-700 font-medium rounded-md transition duration-150"
-          >
-            Continue
-          </button>
+          <div className="flex justify-end">
+            <button
+              type="submit"
+              className="w-auto py-3 px-4 bg-white hover:bg-purple-700 hover:text-white text-purple-700 font-medium rounded-md transition duration-150"
+            >
+              Continue
+            </button>
+          </div>
         </form>
 
         <div className="mt-5 text-center text-gray-300">
@@ -137,3 +189,7 @@ const RegisterPage: React.FC = () => {
 };
 
 export default RegisterPage;
+
+{
+  /*  */
+}
