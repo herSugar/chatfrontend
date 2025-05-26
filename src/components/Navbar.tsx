@@ -1,11 +1,16 @@
 import React, { useState, useEffect } from 'react';
-// No external icon library needed
 
 interface NavbarProps {
   transparentOnTop?: boolean;
+  disableScrollEffect?: boolean;
+  children?: React.ReactNode;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ transparentOnTop = true }) => {
+const Navbar: React.FC<NavbarProps> = ({ 
+  transparentOnTop = true, 
+  disableScrollEffect = false,
+  children 
+}) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('Home');
@@ -13,7 +18,7 @@ const Navbar: React.FC<NavbarProps> = ({ transparentOnTop = true }) => {
   const tabs = ['Home', 'Chat', 'About', 'FAQ'];
 
   useEffect(() => {
-    if (!transparentOnTop) {
+    if (disableScrollEffect || !transparentOnTop) {
       setIsScrolled(true);
       return;
     }
@@ -24,13 +29,13 @@ const Navbar: React.FC<NavbarProps> = ({ transparentOnTop = true }) => {
     
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [transparentOnTop]);
+  }, [transparentOnTop, disableScrollEffect]);
 
   return (
     <nav 
       className={`fixed w-full z-50 transition-all duration-300 ${
         isScrolled 
-          ? 'bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200/50' 
+          ? 'bg-transparent backdrop-blur-sm' 
           : 'bg-transparent'
       }`}
     >
@@ -53,34 +58,34 @@ const Navbar: React.FC<NavbarProps> = ({ transparentOnTop = true }) => {
                 }`}
                 onClick={() => setActiveTab(tab)}
               >
-                {/* Top line - shows on hover */}
                 <span className="absolute top-0 left-0 w-full h-0.5 bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center"></span>
-                
                 {tab}
-                
-                {/* Bottom line - shows on hover */}
                 <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-center"></span>
               </button>
             ))}
             
-            {/* Book Demo Button */}
+            {/* Children elements (like sidebar toggle button) */}
+            {children}
           </div>
 
           {/* Mobile menu button */}
-          <button
-            className="md:hidden text-white focus:outline-none"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            {mobileMenuOpen ? (
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            ) : (
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            )}
-          </button>
+          <div className="md:hidden flex items-center">
+            {children}
+            <button
+              className="text-white focus:outline-none ml-4"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -103,8 +108,6 @@ const Navbar: React.FC<NavbarProps> = ({ transparentOnTop = true }) => {
               {tab}
             </button>
           ))}
-          
-          {/* Mobile Book Demo Button */}
         </div>
       )}
     </nav>
