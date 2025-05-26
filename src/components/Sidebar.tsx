@@ -126,7 +126,22 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
                   {!isCollapsed && (
                     <span className="font-medium truncate">{item.label}</span>
                   )}
-                </button>
+                    </button>
+                    {item.id === 'profile' && (
+                        <button
+                            onClick={() => {
+                                localStorage.clear();
+                                navigate('/login');
+                            }}
+                            className={`mt-2 w-full text-left p-3 rounded-lg cursor-pointer transition-all duration-200 flex items-center gap-3 bg-red-600 text-white hover:bg-red-700 ${
+                                isCollapsed ? 'justify-center px-2' : 'justify-start'
+                            }`}
+                            title={isCollapsed ? 'Logout' : undefined}
+                        >
+                            <span className="text-lg flex-shrink-0">🚪</span>
+                            {!isCollapsed && <span className="font-medium truncate">Logout</span>}
+                        </button>
+                    )}
               </li>
             ))}
           </ul>
