@@ -22,48 +22,37 @@ export default function InputArea({ onSend, onClear, onUpload }: InputAreaProps)
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      onUpload(e.target.files[0]);
-      e.target.value = ""; // Reset input file
-    }
-  };
-
   return (
-    <div className="flex space-x-2">
-      <input
-      type="text"
-      placeholder="Type your message..."
-      className="flex-1 p-2 border border-white rounded bg-transparent text-white "
-      value={input}
-      onChange={(e) => setInput(e.target.value)}
-      onKeyDown={handleKeyDown}
-      disabled={false}
+    <div className="relative flex-1 bg-white rounded-lg">
+  <input
+    type="text"
+    placeholder="Type your message..."
+    className="w-full p-2 rounded-lg focus:outline-none"
+    value={input}
+    onChange={(e) => setInput(e.target.value)}
+    onKeyDown={handleKeyDown}
+    disabled={false}
+  />
+  <button
+    onClick={handleSend}
+    className="absolute right-2 top-1/2 transform -translate-y-1/2 text-indigo-600 hover:text-indigo-800"
+    disabled={!input.trim()}
+  >
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      className="h-5 w-5 rotate-90" 
+      fill="none" 
+      viewBox="0 0 24 24" 
+      stroke="currentColor"
+    >
+      <path 
+        strokeLinecap="round" 
+        strokeLinejoin="round" 
+        strokeWidth={2} 
+        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" 
       />
-      <button
-      onClick={handleSend}
-      className="bg-transparent border border-white text-white px-4 rounded hover:bg-white hover:text-black transition"
-      >
-      Send
-      </button>
-      <button
-      onClick={onClear}
-      className="bg-transparent border border-white text-white px-4 rounded hover:bg-white hover:text-black transition"
-      >
-      Clear
-      </button>
-      <label
-      htmlFor="upload-file"
-      className="bg-transparent border border-white text-white px-4 rounded cursor-pointer hover:bg-white hover:text-black transition"
-      >
-      Upload
-      </label>
-      <input
-      id="upload-file"
-      type="file"
-      className="hidden"
-      onChange={handleFileChange}
-      />
-    </div>
+    </svg>
+  </button>
+</div>
   );
 }
