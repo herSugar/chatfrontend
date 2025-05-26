@@ -1,15 +1,54 @@
-import React from 'react';
-import { ChatMessage } from '../types';
+import React, { useEffect, useRef, useState } from 'react';
+import { api } from '../services/api';
 
-interface MessageProps {
-  message: ChatMessage;
-  isLast: boolean;
-}
+const ChatContainer: React.FC = () => {
+  // State & Refs (from second file)
+  const [query, setQuery] = useState("");
+  const [chatLog, setChatLog] = useState<{ sender: string; text: string }[]>([]);
+  const [loading, setLoading] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
 
-const Message: React.FC<MessageProps> = ({ message, isLast }) => {
-  const isUser = message.role === 'user';
-  const timestamp = message.timestamp?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  // Auto-scroll to bottom
+  const scrollToBottom = () => chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  useEffect(() => scrollToBottom(), [chatLog]);
 
+  // Send message function
+  const sendMessage = async () => {
+    if (!query.trim()) return;
+
+    const token = localStorage.getItem("auth_token");
+    const userEmail = localStorage.getItem("user_email");
+    if (!token || !userEmail) {
+      alert("Please log in first.");
+      return;
+    }
+
+    // Set auth token
+    if (!api.defaults.headers.common["Authorization"]) {
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    }
+
+    // Update chat log
+    setChatLog((prev) => [...prev, { sender: "You", text: query }]);
+    setLoading(true);
+
+    try {
+      const res = await api.post("/api/ask", { query, email: userEmail });
+      setChatLog((prev) => [...prev, { sender: "Agent", text: res.data.response }]);
+    } catch (err) {
+      setChatLog((prev) => [...prev, { sender: "Agent", text: "Error sending message." }]);
+    } finally {
+      setQuery("");
+      setLoading(false);
+    }
+  };
+
+  // Handle Enter key
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && !loading) sendMessage();
+  };
+
+  // UI (from second file)
   return (
     <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 last:mb-0`}>
       <div
@@ -19,7 +58,6 @@ const Message: React.FC<MessageProps> = ({ message, isLast }) => {
             : 'bg-white/10 backdrop-blur-sm text-white border border-white/20'
         }`}
       >
-        
         {/* Message content */}
         <div className="whitespace-pre-wrap">{message.content}</div>
         
@@ -32,24 +70,30 @@ const Message: React.FC<MessageProps> = ({ message, isLast }) => {
           >
             {timestamp}
           </div>
-        )}
-
-        {/* Decorative elements for AI messages */}
-        {!isUser && (
-          <>
-            {/* Corner accent */}
-            <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-purple-400/30 rounded-full"></div>
-            <div className="absolute -top-1 -left-1 w-2 h-2 bg-blue-400/30 rounded-full"></div>
-          </>
-        )}
-
-        {/* Animated indicator for last message */}
-        {isLast && !isUser && (
-          <div className="absolute -bottom-2 right-4 w-4 h-4 bg-indigo-500 rounded-full animate-pulse"></div>
-        )}
+        ))}
+        {loading && <p><em>Agent is typing...</em></p>}
+        <div ref={chatEndRef} />
+      </div>
+      <div style={{ marginTop: "1rem", display: "flex", gap: "0.5rem" }}>
+        <input
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
+          disabled={loading}
+          placeholder="Type your question..."
+          style={{ flex: 1, padding: "0.5rem", borderRadius: "4px", border: "1px solid #ccc" }}
+        />
+        <button
+          onClick={sendMessage}
+          disabled={loading}
+          style={{ padding: "0.5rem 1rem", backgroundColor: loading ? "#ccc" : "#8B5CF6", color: "#fff", border: "none", borderRadius: "4px", cursor: loading ? "not-allowed" : "pointer" }}
+        >
+          {loading ? "Sending..." : "Send"}
+        </button>
       </div>
     </div>
   );
 };
 
-export default Message;
+export default ChatContainer;

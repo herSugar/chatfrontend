@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import logoImage from '../assets/images/logos.png';
+
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
@@ -78,17 +80,21 @@ const LandingPage: React.FC = () => {
         {/* Glassmorphism Card Container */}
         <div className="relative z-10 backdrop-blur-sm bg-white/5 rounded-3xl p-8 border border-white/10 shadow-2xl max-w-4xl mx-auto">
           
-          {/* Avatar with 3D Effect */}
+          {/* Logo with 3D Effect */}
           <div className="relative mb-8">
             <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-white to-indigo-100 flex items-center justify-center border-4 border-white/20 shadow-2xl transform hover:scale-110 transition-transform duration-300">
               {/* 3D Shadow Effect */}
               <div className="absolute inset-0 rounded-full bg-gradient-to-br from-transparent to-indigo-900/20 transform translate-x-2 translate-y-2 -z-10"></div>
-              <div className="w-28 h-28 rounded-full bg-gradient-to-br from-indigo-50 to-indigo-200 flex items-center justify-center shadow-inner">
-                <span className="text-4xl animate-pulse">🤖</span>
-              </div>
+                <div className="w-32 h-32 rounded-full flex items-center justify-center shadow-inner overflow-hidden">
+                  <img 
+                    src={logoImage} 
+                    alt="Pitu Logo" 
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                </div>
             </div>
             
-            {/* Orbiting Elements */}
+             {/* Orbiting Elements */}
             <div className="absolute inset-0 animate-spin" style={{ animationDuration: '10s' }}>
               <div className="absolute top-0 left-1/2 w-3 h-3 bg-blue-400 rounded-full transform -translate-x-1/2 -translate-y-6"></div>
               <div className="absolute bottom-0 left-1/2 w-2 h-2 bg-purple-400 rounded-full transform -translate-x-1/2 translate-y-6"></div>

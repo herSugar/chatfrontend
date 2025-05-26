@@ -97,7 +97,7 @@ const LoginPage = () => {
         </div>
         
       <div className="bg-gradient-to-br from-indigo-900 to-purple-800 shadow-xl rounded-2xl p-8 w-full max-w-md z-50 ">
-        <div className="flex justify-center "><img src="image/logos.png" alt="logo" className="w-80 h-auto"/></div>
+        <div className="flex justify-center "><img src="image/logop.png" alt="logo" className="w-80 h-auto"/></div>
         
 
         
@@ -126,6 +126,13 @@ const LoginPage = () => {
               Login
           </button>
         </form>
+        
+          <p className="flex justify-center mt-5 text-gray-300 ">Don't have an account?
+            <a href="/register" className="hover:underline">
+              Register
+            </a>
+          </p>
+        
         <div className="flex items-center gap-3 my-3">
           <div className="h-px w-full bg-gray-400 mx-4"></div>
           <p className="text-gray-300">Or</p>
