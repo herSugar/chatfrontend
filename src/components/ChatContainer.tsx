@@ -60,18 +60,19 @@ export default function ChatContainer() {
       `}>
         {/* Navbar with toggle button - Static positioning override */}
         <div className="[&>nav]:!relative [&>nav]:!top-auto">
-          <Navbar 
-            transparentOnTop={true} 
-            disableScrollEffect={true}
-          >
-            <button 
-              onClick={() => setIsCollapsed(!isCollapsed)}
-              className="p-2 rounded-lg hover:bg-indigo-600 transition-colors text-white"
-              aria-label="Toggle sidebar"
-            >
-              ☰
-            </button>
-          </Navbar>
+          <div className="[&>nav]:!relative [&>nav]:!top-auto">
+        {/* You can replace this with your Navbar component if available */}
+        <div className="flex items-center p-4">
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="p-2 rounded-lg hover:bg-indigo-600 transition-colors text-white"
+          aria-label="Toggle sidebar"
+        >
+          ☰
+        </button>
+        <h1 className="ml-4 text-2xl font-bold text-white">Chat Generator</h1>
+        </div>
+      </div>
         </div>
         
         {/* Chat content */}

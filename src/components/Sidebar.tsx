@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+
 interface SidebarProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
@@ -13,79 +14,86 @@ interface MenuItem {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
-    const [activeItem, setActiveItem] = useState<string>('chat');
-    const navigate = useNavigate();
+  const [activeItem, setActiveItem] = useState<string>('chat');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.pathname.startsWith('/chat')) {
+      setActiveItem('chat');
+    } else if (location.pathname.startsWith('/history')) {
+      setActiveItem('history');
+    } else if (location.pathname.startsWith('/saves')) {
+      setActiveItem('saves');
+    } else if (location.pathname.startsWith('/settings')) {
+      setActiveItem('settings');
+    } else if (location.pathname.startsWith('/profile')) {
+      setActiveItem('profile');
+    }
+  }, [location.pathname]);
 
   const menuItems: MenuItem[] = [
     {
       id: 'chat',
       label: 'New Chat',
       icon: '💬',
-          onClick: () => {
-              setActiveItem('chat');
-              navigate('/chat');
-        console.log('New Chat clicked');
-      }
+      onClick: () => navigate('/chat'),
     },
     {
       id: 'history',
       label: 'Chat History',
       icon: '📋',
-        onClick: () => {
-            setActiveItem('history');
-            navigate('/history');
-        console.log('Chat History clicked');
-      }
+      onClick: () => navigate('/history'),
     },
     {
       id: 'saves',
       label: 'Saves',
       icon: '📄',
-      onClick: () => {
-        setActiveItem('saves');
-        console.log('Saves clicked');
-      }
+      onClick: () => navigate('/saves'),
     },
     {
       id: 'settings',
       label: 'Settings',
       icon: '⚙️',
-      onClick: () => {
-        setActiveItem('settings');
-        console.log('Settings clicked');
-      }
+      onClick: () => navigate('/settings'),
     },
     {
       id: 'profile',
       label: 'Profile',
       icon: '👤',
-      onClick: () => {
-        setActiveItem('profile');
-        console.log('Profile clicked');
-      }
-    }
+      onClick: () => navigate('/profile'),
+    },
   ];
 
   const handleItemClick = (item: MenuItem) => {
-    setActiveItem(item.id);
     if (item.onClick) {
       item.onClick();
     }
   };
 
   return (
-    <div className={`
-      h-full bg-gradient-to-b from-[#7c3aed] to-[#312e81] text-white fixed top-0 left-0 z-30
-      transition-transform duration-300 ease-in-out
-      ${isCollapsed ? 'w-16 -translate-x-full' : 'w-48 translate-x-0'}
-      shadow-xl border-r border-[#7c3aed]
-    `}>
+    <div
+      className={`
+        h-full bg-gradient-to-b from-[#7c3aed] to-[#312e81] text-white fixed top-0 left-0 z-30
+        transition-transform duration-300 ease-in-out
+        ${isCollapsed ? 'w-16 -translate-x-full' : 'w-48 translate-x-0'}
+        shadow-xl border-r border-[#7c3aed]
+      `}
+    >
+      {/* Logo */}
+      <div className="flex items-center justify-center py-4">
+        <img
+          src="/image/logop.png"
+          alt="Logo"
+          className={`transition-all duration-300 ${
+            isCollapsed ? 'w-20 h-20' : 'w-32 h-32'
+          }`}
+        />
+      </div>
       {/* Header */}
       <div className="p-4 flex items-center justify-between border-b border-[#7c3aed] h-16">
-        {!isCollapsed && (
-          <h2 className="font-bold text-lg text-white">Menu</h2>
-        )}
-        <button 
+        {!isCollapsed && <h2 className="font-bold text-lg text-white">Menu</h2>}
+        <button
           onClick={onToggleCollapse}
           className="p-1 rounded hover:bg-[#7c3aed] transition-colors duration-200 flex items-center justify-center w-8 h-8 text-white"
           aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
@@ -105,21 +113,18 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
                   className={`
                     w-full text-left p-3 rounded-lg cursor-pointer transition-all duration-200
                     flex items-center gap-3
-                    ${activeItem === item.id 
-                      ? 'bg-indigo-600 text-white shadow-md' 
-                      : 'hover:bg-[#7c3aed] text-indigo-100 hover:text-white'
+                    ${
+                      activeItem === item.id
+                        ? 'bg-indigo-600 text-white shadow-md'
+                        : 'hover:bg-[#7c3aed] text-indigo-100 hover:text-white'
                     }
                     ${isCollapsed ? 'justify-center px-2' : 'justify-start'}
                   `}
                   title={isCollapsed ? item.label : undefined}
                 >
-                  <span className="text-lg flex-shrink-0">
-                    {item.icon}
-                  </span>
+                  <span className="text-lg flex-shrink-0">{item.icon}</span>
                   {!isCollapsed && (
-                    <span className="font-medium truncate">
-                      {item.label}
-                    </span>
+                    <span className="font-medium truncate">{item.label}</span>
                   )}
                 </button>
               </li>

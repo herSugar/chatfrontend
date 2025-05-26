@@ -121,36 +121,36 @@ const HistoryPage = () => {
         >
           ☰
         </button>
-        <h1 className="ml-4 text-2xl font-bold text-white">Riwayat Chat</h1>
+        <h1 className="ml-4 text-2xl font-bold text-white">Chat History</h1>
         </div>
       </div>
 
       {/* History content */}
-      <div className="flex-1 overflow-y-auto bg-gradient-to-b from-[#7c3aed] to-[#312e81]">
-        <div className="h-full flex flex-col">
-        <div className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-4xl mx-auto h-full flex flex-col">
-          {loading ? (
-            <div className="flex-1 flex items-center justify-center text-white text-lg">
-            Memuat riwayat...
-            </div>
-          ) : history.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center text-white text-lg">
-            Tidak ada riwayat.
-            </div>
-          ) : (
-            <div className="flex flex-col gap-4 w-full">
-            {history.map((session) => (
-              <div
+  <div className="flex-1 h-full overflow-y-auto bg-gradient-to-b from-[#7c3aed] to-[#312e81]">
+  <div className="flex flex-col h-full min-h-0">
+    <div className="flex-1 overflow-y-auto p-6 min-h-0">
+      {loading ? (
+        <div className="flex-1 flex items-center justify-center text-white text-lg">
+          Memuat riwayat...
+        </div>
+      ) : history.length === 0 ? (
+        <div className="flex-1 flex items-center justify-center text-white text-lg">
+          Tidak ada riwayat.
+        </div>
+      ) : (
+        // Ubah dari grid ke flex kolom
+        <div className="flex flex-col gap-4 w-full">
+          {history.map((session) => (
+            <div
               key={session._id}
               className="relative border border-white p-4 rounded shadow cursor-pointer hover:bg-white/10 transition"
               style={{ background: "rgba(255,255,255,0.08)", color: "white" }}
               onClick={() => navigate(`/chat/${session.session_id}`)}
-              >
+            >
               <button
                 onClick={e => {
-                e.stopPropagation();
-                handleDeleteSession(session.session_id);
+                  e.stopPropagation();
+                  handleDeleteSession(session.session_id);
                 }}
                 className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white px-2 py-1 text-xs rounded"
               >
@@ -164,15 +164,16 @@ const HistoryPage = () => {
                 <strong>Ringkasan:</strong>{" "}
                 {getSessionSummary(session.messages)}
               </p>
-              </div>
-            ))}
             </div>
-          )}
-          <div ref={historyEndRef} />
-          </div>
+          ))}
         </div>
-        </div>
-      </div>
+      )}
+      <div ref={historyEndRef} />
+    </div>
+  </div>
+</div>
+
+
       </div>
     </div>
   );
