@@ -153,7 +153,7 @@ const LandingPage: React.FC = () => {
                   <button
                     onClick={() => navigate('/login')}
                     className="relative px-12 py-4 bg-white text-indigo-800 rounded-lg font-bold 
-                             hover:bg-opacity-90 transition-all duration-300 shadow-lg hover:shadow-2xl 
+                               hover:bg-opacity-90 transition-all duration-300 shadow-lg hover:shadow-2xl 
                              transform hover:scale-110 hover:-translate-y-2 z-10
                              border-2 border-transparent hover:border-white/20
                              group-hover:shadow-blue-400/25"
