@@ -35,7 +35,7 @@ const Navbar: React.FC<NavbarProps> = ({
     <nav 
       className={`fixed w-full z-50 transition-all duration-300 ${
         isScrolled 
-          ? 'bg-transparent backdrop-blur-sm' 
+          ? 'bg-transparent backdrop-blur-sm border-b border-white/30' 
           : 'bg-transparent'
       }`}
     >
@@ -43,7 +43,7 @@ const Navbar: React.FC<NavbarProps> = ({
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="text-xl font-bold text-white">
-            BALI<span className="text-purple-400">PITU</span>
+            BALI<span className="text-orange-500">PITU</span>
           </div>
           
           {/* Desktop Navigation */}
@@ -54,7 +54,7 @@ const Navbar: React.FC<NavbarProps> = ({
                 className={`py-2 relative text-sm font-medium transition-colors group ${
                   activeTab === tab
                     ? 'text-white'
-                    : 'text-gray-300 hover:text-white'
+                    : 'text-white hover:text-gray-400'
                 }`}
                 onClick={() => setActiveTab(tab)}
               >

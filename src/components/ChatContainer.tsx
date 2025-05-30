@@ -88,6 +88,38 @@ export default function ChatContainer() {
                   </div>
                 )}
 
+                {/* Animated 3D Background Elements */}
+                <div className="absolute inset-0 overflow-hidden">
+                  {/* Floating Geometric Shapes */}
+                  <div className="absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-full animate-bounce" style={{ animationDelay: '0s', animationDuration: '3s' }}></div>
+                  <div className="absolute top-40 right-20 w-16 h-16 bg-blue-400/20 rounded-lg rotate-45 animate-pulse" style={{ animationDelay: '1s' }}></div>
+                  <div className="absolute bottom-40 left-20 w-12 h-12 bg-purple-300/15 rounded-full animate-bounce" style={{ animationDelay: '2s', animationDuration: '4s' }}></div>
+                  <div className="absolute bottom-20 right-10 w-24 h-24 bg-indigo-300/10 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                  
+                  {/* Animated Grid Pattern */}
+                  <div className="absolute inset-0 opacity-20">
+                    <div className="absolute inset-0" style={{
+                      backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)',
+                      backgroundSize: '50px 50px',
+                      animation: 'gridMove 20s linear infinite'
+                    }}></div>
+                  </div>
+                  
+                  {/* Floating Particles */}
+                  {[...Array(20)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="absolute w-2 h-2 bg-white/20 rounded-full animate-pulse"
+                      style={{
+                        left: `${Math.random() * 100}%`,
+                        top: `${Math.random() * 100}%`,
+                        animationDelay: `${Math.random() * 3}s`,
+                        animationDuration: `${2 + Math.random() * 3}s`
+                      }}
+                    ></div>
+                  ))}
+                </div>
+
                 <div className="flex flex-col gap-3 w-full">
                   {messages.map((msg, idx) => (
                     <Message key={`${idx}-${msg.timestamp?.getTime()}`} message={msg} />
