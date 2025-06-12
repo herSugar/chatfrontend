@@ -7,6 +7,7 @@ import LoginPage from "./pages/LoginPage";
 import HistoryPage from "./pages/HistoryPage";
 import RegisterPage from "./pages/RegisterPage";
 import SettingPages from "./pages/SettingPages";
+import ChatWithImage from "./pages/ChatWithImage";
 
 const App: React.FC = () => {
   return (
@@ -16,10 +17,12 @@ const App: React.FC = () => {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/chat" element={<ChatPage />} />
+          <Route path="/chat/:sessionId" element={<ChatPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/history" element={<HistoryPage />} />
-          <Route path="/settings" element={<SettingPages/>} />
+          <Route path="/settings" element={<SettingPages />} />
+          <Route path="/image" element={<ChatWithImage />} />
         </Routes>
       </div>
     </Router>

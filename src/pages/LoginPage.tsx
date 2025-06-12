@@ -15,10 +15,8 @@ const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-
-  const sendTokenToBackend = async (token: string) => {
+ const sendTokenToBackend = async (token: string) => {
   try {
-    console.log("Toker terkirim ke backend", token);
     const data = await loginWithGoogleToken(token); // ✅ panggil dari services
     console.log("Login success:", data);
     navigate("/chat"); // ✅ redirect setelah login
@@ -61,86 +59,11 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-indigo-900 to-purple-800">
-      
-      {/* Animated 3D Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-          {/* Floating Geometric Shapes */}
-          <div className="absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-full animate-bounce" style={{ animationDelay: '0s', animationDuration: '3s' }}></div>
-          <div className="absolute top-40 right-20 w-16 h-16 bg-blue-400/20 rounded-lg rotate-45 animate-pulse" style={{ animationDelay: '1s' }}></div>
-          <div className="absolute bottom-40 left-20 w-12 h-12 bg-purple-300/15 rounded-full animate-bounce" style={{ animationDelay: '2s', animationDuration: '4s' }}></div>
-          <div className="absolute bottom-20 right-10 w-24 h-24 bg-indigo-300/10 rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-          
-          {/* Animated Grid Pattern */}
-          <div className="absolute inset-0 opacity-20">
-            <div className="absolute inset-0" style={{
-              backgroundImage: 'linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)',
-              backgroundSize: '50px 50px',
-              animation: 'gridMove 20s linear infinite'
-            }}></div>
-          </div>
-          
-          {/* Floating Particles */}
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-2 h-2 bg-white/20 rounded-full animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-                animationDuration: `${2 + Math.random() * 3}s`
-              }}
-            ></div>
-          ))}
-          <div className="absolute -inset-1 bg-gradient-to-r from-blue-400/50 to-purple-400/50 rounded-lg opacity-20 animate-pulse"></div>
-        </div>
-        
-      <div className="bg-gradient-to-br from-indigo-900 to-purple-800 shadow-xl rounded-2xl p-8 w-full max-w-md z-50 ">
-        <div className="flex justify-center "><img src="image/logop.png" alt="logo" className="w-80 h-auto"/></div>
-        
+    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+      <div className="bg-white shadow-md rounded-2xl p-8 w-full max-w-md">
+        <h2 className="text-2xl font-bold text-purple-700 mb-6 text-center">Login</h2>
 
-        
-        <form onSubmit={handleEmailLogin} className="space-y-4">
-          <input
-            type="email"
-            placeholder="Email"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg  text-white focus:outline-none focus:ring-2 focus:ring-purple-400"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full px-4 py-2 border border-gray-300 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 "
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <button
-            type="submit"
-            className="w-auto ml-auto flex items-center gap-2 bg-purple-600 text-white py-2 px-10 rounded-lg hover:bg-purple-700 transition"
-          >
-              <FaEnvelope className="text-white"/>
-              Login
-          </button>
-        </form>
-        
-          <p className="flex justify-center mt-5 text-gray-300 ">Don't have an account?
-            <a href="/register" className="hover:underline">
-              Register
-            </a>
-          </p>
-        
-        <div className="flex items-center gap-3 my-3">
-          <div className="h-px w-full bg-gray-400 mx-4"></div>
-          <p className="text-gray-300">Or</p>
-          <div className="h-px w-full bg-gray-400 mx-4"></div>
-        </div>
-        
-
-        <div className="space-y-3 my-6">
+        <div className="space-y-3 mb-6">
           <button
             onClick={handleGoogleLogin}
             className="w-full flex items-center justify-center gap-2 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition"
@@ -156,6 +79,35 @@ const LoginPage = () => {
             Login with GitHub
           </button>
         </div>
+
+        <hr className="my-4" />
+        <form onSubmit={handleEmailLogin} className="space-y-4">
+          <h4 className="text-lg font-semibold text-purple-700 text-center">Or login with Email</h4>
+
+          <input
+            type="email"
+            placeholder="Email"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button
+            type="submit"
+            className="w-full flex items-center justify-center gap-2 bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition"
+          >
+            <FaEnvelope className="text-white" />
+            Login
+          </button>
+        </form>
       </div>
     </div>
   );

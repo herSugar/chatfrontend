@@ -116,10 +116,13 @@
 
 // src/pages/ChatPage.tsx
 import React from 'react';
+import { useParams } from 'react-router-dom';
 import ChatContainer from '../components/ChatContainer';
 
 const ChatPage: React.FC = () => {
-  return <ChatContainer />;
+  const { sessionId } = useParams();
+
+  return <ChatContainer sessionId={sessionId} />;
 };
 
 export default ChatPage;

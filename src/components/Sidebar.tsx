@@ -34,10 +34,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
 
   const menuItems: MenuItem[] = [
     {
-      id: 'chat',
+      id: 'new-chat',
       label: 'New Chat',
+      icon: '🆕',
+      onClick: () => {
+        localStorage.removeItem('chat_session_id'); // Hapus session
+        navigate('/chat');
+        window.location.reload();// Load ulang halaman
+      },
+    },
+    {
+      id: 'chat',
+      label: 'Chat',
       icon: '💬',
-      onClick: () => navigate('/chat'),
+      onClick: () => navigate('/chat'), // Lanjutkan session
     },
     {
       id: 'history',
@@ -88,8 +98,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
           className={`transition-all duration-300 ${
             isCollapsed ? 'w-20 h-20' : 'w-32 h-32'
           }`}
+          onClick={() => navigate('/')}
+          style={{ cursor: 'pointer' }}
         />
       </div>
+
       {/* Header */}
       <div className="p-4 flex items-center justify-between border-b border-[#7c3aed] h-16">
         {!isCollapsed && <h2 className="font-bold text-lg text-white">Menu</h2>}
@@ -126,22 +139,26 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
                   {!isCollapsed && (
                     <span className="font-medium truncate">{item.label}</span>
                   )}
+                </button>
+
+                {item.id === 'profile' && (
+                  <>
+                    {/* Logout Button */}
+                    <button
+                      onClick={() => {
+                        localStorage.clear();
+                        navigate('/login');
+                      }}
+                      className={`mt-2 w-full text-left p-3 rounded-lg cursor-pointer transition-all duration-200 flex items-center gap-3 bg-red-600 text-white hover:bg-red-700 ${
+                        isCollapsed ? 'justify-center px-2' : 'justify-start'
+                      }`}
+                      title={isCollapsed ? 'Logout' : undefined}
+                    >
+                      <span className="text-lg flex-shrink-0">🚪</span>
+                      {!isCollapsed && <span className="font-medium truncate">Logout</span>}
                     </button>
-                    {item.id === 'profile' && (
-                        <button
-                            onClick={() => {
-                                localStorage.clear();
-                                navigate('/login');
-                            }}
-                            className={`mt-2 w-full text-left p-3 rounded-lg cursor-pointer transition-all duration-200 flex items-center gap-3 bg-red-600 text-white hover:bg-red-700 ${
-                                isCollapsed ? 'justify-center px-2' : 'justify-start'
-                            }`}
-                            title={isCollapsed ? 'Logout' : undefined}
-                        >
-                            <span className="text-lg flex-shrink-0">🚪</span>
-                            {!isCollapsed && <span className="font-medium truncate">Logout</span>}
-                        </button>
-                    )}
+                  </>
+                )}
               </li>
             ))}
           </ul>
