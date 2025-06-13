@@ -29,7 +29,7 @@ const LoginPage = () => {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      const token = await result.user.getIdToken();
+      const token = await result.user.getIdToken(true); // force refresh
       await sendTokenToBackend(token);
     } catch (err) {
       console.error("Google login error:", err);

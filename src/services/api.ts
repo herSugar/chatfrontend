@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import { auth } from "./firebaseConfig";  
 // ========== Konfigurasi Axios ==========
 export const api = axios.create({
   baseURL: "http://localhost:8000/",
@@ -9,12 +9,18 @@ export const api = axios.create({
 });
 
 // ========== Interceptor: Tambahkan token auth secara otomatis ==========
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("auth_token");
-  if (token) {
-    config.headers["Authorization"] = `Bearer ${token}`;
+api.interceptors.response.use(undefined, async (error) => {
+  if (error.response?.status === 401 && auth.currentUser) {
+    const newToken = await auth.currentUser.getIdToken(true);
+    localStorage.setItem("auth_token", newToken);
+    api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
+
+    // Retry request with new token
+    error.config.headers["Authorization"] = `Bearer ${newToken}`;
+    return api.request(error.config);
   }
-  return config;
+
+  return Promise.reject(error);
 });
 
 // ========== Endpoints ==========
