@@ -264,27 +264,26 @@ export default function ChatContainer({ sessionId }: Props) {
             {/* File Preview Area */}
             {selectedFile && (
               <div className="max-w-4xl mx-auto w-full mb-2">
-                <div className="bg-white/10 backdrop-blur-lg rounded-lg p-3 border border-white/20">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-white text-sm font-medium">Selected File:</span>
-                    <button
-                      onClick={removeSelectedFile}
-                      className="text-white/70 hover:text-white p-1 rounded transition-colors"
-                      aria-label="Remove file"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                  
+                <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-3 border border-white/20">
                   <div className="flex items-center space-x-3">
                     {filePreview && (
-                      <img 
-                        src={filePreview} 
-                        alt="Preview" 
-                        className="w-12 h-12 object-cover rounded border border-white/20"
-                      />
+                      <div className="relative w-12 h-12">
+                        <img 
+                          src={filePreview} 
+                          alt="Preview" 
+                          className="w-12 h-12 object-cover rounded border border-white/20"
+                        />
+                        <button
+                          onClick={removeSelectedFile}
+                          className="absolute -top-1 -right-1 bg-black/50 hover:bg-black text-white/80 hover:text-white p-0.5 rounded-full transition-colors"
+                          title="Hapus file"
+                          aria-label="Remove file"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
                     )}
                     <div className="flex-1 min-w-0">
                       <p className="text-white text-sm truncate">{selectedFile.name}</p>
@@ -296,7 +295,8 @@ export default function ChatContainer({ sessionId }: Props) {
             )}
 
             {/* Input Area */}
-            <div className="max-w-4xl mx-auto w-full flex gap-2 p-2 text-white border border-white bg-white/10 backdrop-blur-lg rounded-3xl shadow-lg items-center mb-6 mt-2">
+            <div className="max-w-4xl mx-auto w-full flex gap-2 p-2 text-white border border-white/20 bg-white/13 backdrop-blur-lg rounded-3xl shadow-lg items-center mb-6 mt-2">
+              {/* Hidden file input */}
               <input
                 ref={fileInputRef}
                 type="file"
@@ -306,7 +306,16 @@ export default function ChatContainer({ sessionId }: Props) {
                 disabled={loading || sessionLoading}
               />
               
-              <label className="flex items-center cursor-pointer px-3 py-2 rounded-lg hover:bg-indigo-500 transition-colors">
+              {/* File upload button */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="p-3 bg-transparent rounded-full hover:bg-indigo-600/30 transition-colors flex items-center justify-center"
+                disabled={loading || sessionLoading}
+                title="Upload gambar
+Tipe gambar: JPEG, JPG, PNG, GIF, WEBP (maks 10MB)"
+                aria-label="Upload gambar"
+              >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-6 w-6 text-white"
@@ -321,37 +330,33 @@ export default function ChatContainer({ sessionId }: Props) {
                     d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
-                <input
-                  type="file"
-                  className="hidden"
-                  onChange={handleFileSelect}
-                  accept="image/*"
-                  disabled={loading || sessionLoading}
-                />
-              </label>
+              </button>
 
+              {/* Text input */}
               <input
                 type="text"
                 placeholder={
                   sessionLoading 
                     ? "Loading session..." 
                     : selectedFile 
-                      ? `File selected: ${selectedFile.name} - Add description or send...`
-                      : "Type your question or upload an image..."
+                      ? `File terpilih: ${selectedFile.name} - Tambahkan pesan...`
+                      : "Ketik pesan Anda di sini..."
                 }
-                className="flex-1 p-3 rounded-lg bg-transparent outline-none text-white placeholder-white/70"
+                className="flex-1 p-3 rounded-lg bg-transparent outline-none text-white placeholder-indigo-200/70"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
                 disabled={loading || sessionLoading}
               />
 
+              {/* Send button */}
               <button
-                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg p-3 flex items-center justify-center disabled:opacity-50 transition-colors"
+                className="bg-transparent hover:bg-indigo-600/30 text-white rounded-full p-3 flex items-center justify-center transition-colors"
                 onClick={onSend}
                 disabled={loading || sessionLoading || (!query.trim() && !selectedFile)}
-                aria-label="Send"
+                aria-label="Send message"
                 style={{ minWidth: "48px" }}
+                title="Kirim pesan"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
