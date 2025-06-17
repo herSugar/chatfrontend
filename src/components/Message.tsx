@@ -1,99 +1,135 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { api } from '../services/api';
+// components/Message.tsx
+import React from "react";
 
-const ChatContainer: React.FC = () => {
-  // State & Refs (from second file)
-  const [query, setQuery] = useState("");
-  const [chatLog, setChatLog] = useState<{ sender: string; text: string }[]>([]);
-  const [loading, setLoading] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement | null>(null);
+export interface ChatMessage {
+  sender: string;
+  text: string;
+  timestamp?: string;
+  image?: string; // Base64 image data or URL
+  fileName?: string; // Optional file name for display
+}
 
-  // Auto-scroll to bottom
-  const scrollToBottom = () => chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  useEffect(() => scrollToBottom(), [chatLog]);
+interface Props {
+  message: any; // Bisa ChatMessage atau format dari OpenAI
+}
 
-  // Send message function
-  const sendMessage = async () => {
-    if (!query.trim()) return;
+export default function Message({ message }: Props) {
+  const parsedMessage = normalizeMessage(message);
+  const isUser = parsedMessage.sender === "You";
+  const jsonData = extractJSON(parsedMessage.text);
 
-    const token = localStorage.getItem("auth_token");
-    const userEmail = localStorage.getItem("user_email");
-    if (!token || !userEmail) {
-      alert("Please log in first.");
-      return;
-    }
+  const formattedTime = parsedMessage.timestamp
+    ? new Date(parsedMessage.timestamp).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "";
 
-    // Set auth token
-    if (!api.defaults.headers.common["Authorization"]) {
-      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    }
+  let content: React.ReactNode = parsedMessage.text;
 
-    // Update chat log
-    setChatLog((prev) => [...prev, { sender: "You", text: query }]);
-    setLoading(true);
+  // Handle JSON structured content
+  if (jsonData && jsonData.title && jsonData.categories) {
+    content = (
+      <div className="bg-white/90 rounded-lg p-4 shadow-md text-black max-w-xl">
+        <h3 className="font-bold text-lg mb-2">{jsonData.title}</h3>
+        {jsonData.intro && <p className="mb-3">{jsonData.intro}</p>}
 
-    try {
-      const res = await api.post("/api/ask", { query, email: userEmail });
-      setChatLog((prev) => [...prev, { sender: "Agent", text: res.data.response }]);
-    } catch (err) {
-      setChatLog((prev) => [...prev, { sender: "Agent", text: "Error sending message." }]);
-    } finally {
-      setQuery("");
-      setLoading(false);
-    }
-  };
-
-  // Handle Enter key
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !loading) sendMessage();
-  };
-
-  // UI (from second file)
-  return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} mb-4 last:mb-0`}>
-      <div
-        className={`relative max-w-3xl rounded-2xl px-6 py-4 shadow-lg ${
-          isUser
-            ? 'bg-gradient-to-br from-indigo-600 to-blue-600 text-white'
-            : 'bg-white/10 backdrop-blur-sm text-white border border-white/20'
-        }`}
-      >
-        {/* Message content */}
-        <div className="whitespace-pre-wrap">{message.content}</div>
-        
-        {/* Timestamp */}
-        {timestamp && (
-          <div
-            className={`text-xs mt-1 ${
-              isUser ? 'text-blue-200' : 'text-white/60'
-            }`}
-          >
-            {timestamp}
+        {jsonData.categories.map((cat: any, idx: number) => (
+          <div key={idx} className="mb-3">
+            <h4 className="font-semibold">{cat.label}</h4>
+            <ul className="list-disc list-inside">
+              {cat.places.map((place: string, i: number) => (
+                <li key={i}>{place}</li>
+              ))}
+            </ul>
           </div>
         ))}
-        {loading && <p><em>Agent is typing...</em></p>}
-        <div ref={chatEndRef} />
+
+        {jsonData.closing && <p className="italic">{jsonData.closing}</p>}
       </div>
-      <div style={{ marginTop: "1rem", display: "flex", gap: "0.5rem" }}>
-        <input
-          type="text"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-          disabled={loading}
-          placeholder="Type your question..."
-          style={{ flex: 1, padding: "0.5rem", borderRadius: "4px", border: "1px solid #ccc" }}
-        />
-        <button
-          onClick={sendMessage}
-          disabled={loading}
-          style={{ padding: "0.5rem 1rem", backgroundColor: loading ? "#ccc" : "#8B5CF6", color: "#fff", border: "none", borderRadius: "4px", cursor: loading ? "not-allowed" : "pointer" }}
+    );
+  }
+
+  // Debug: Log the message to see what we're receiving
+  // console.log("Message data:", parsedMessage);
+
+  return (
+    <div className="flex flex-col">
+      {/* Display filename bubble if present */}
+      {parsedMessage.fileName && (
+        <div
+          className={`max-w-[80%] p-2 rounded-lg mb-1 ${
+            isUser
+              ? "bg-orange-600 text-gray-400 ml-auto"
+              : "bg-gray-300 text-black mr-auto"
+          }`}
         >
-          {loading ? "Sending..." : "Send"}
-        </button>
+          <div className="flex items-center gap-2 text-sm">
+            🖼️ {parsedMessage.fileName}
+          </div>
+        </div>
+      )}
+      
+      {/* Display text message bubble */}
+      {parsedMessage.text && parsedMessage.text.trim() && (
+        <div
+          className={`max-w-[80%] p-3 rounded-lg mb-1 break-words whitespace-pre-wrap ${
+            isUser
+              ? "bg-orange-600 text-white ml-auto"
+              : "bg-gray-300 text-black mr-auto"
+          }`}
+        >
+          {content}
+        </div>
+      )}
+      
+      <div
+        className={`text-xs text-gray-400 ${
+          isUser ? "text-right pr-1" : "text-left pl-1"
+        }`}
+      >
+        {formattedTime}
       </div>
     </div>
   );
-};
+}
 
-export default ChatContainer;
+// Mengubah message dari OpenAI-style ke format standar ChatMessage
+function normalizeMessage(msg: any): ChatMessage {
+  // Handle different message formats
+  if ("role" in msg && "content" in msg) {
+    return {
+      sender: msg.role === "user" ? "You" : "Assistant",
+      text: msg.content || "",
+      timestamp: msg.timestamp ?? new Date().toISOString(),
+      image: msg.image,
+      fileName: msg.fileName,
+    };
+  }
+
+  // Handle direct ChatMessage format
+  return {
+    sender: msg.sender ?? "Unknown",
+    text: msg.text ?? "",
+    timestamp: msg.timestamp ?? new Date().toISOString(),
+    image: msg.image,
+    fileName: msg.fileName,
+  };
+}
+
+// Mengekstrak JSON dari isi text jika ada
+function extractJSON(text: string): any | null {
+  if (!text) return null;
+  
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start === -1 || end === -1) return null;
+
+  const jsonString = text.slice(start, end + 1);
+
+  try {
+    return JSON.parse(jsonString);
+  } catch {
+    return null;
+  }
+}

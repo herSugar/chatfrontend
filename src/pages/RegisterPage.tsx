@@ -1,34 +1,68 @@
 import React, { useState } from "react";
+import axios from "axios";
 import {
   GoogleAuthProvider,
   signInWithPopup,
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  deleteUser,
 } from "firebase/auth";
 import { auth } from "../services/firebaseConfig";
 import { FcGoogle } from "react-icons/fc";
-import { FaGithub, FaEnvelope } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { loginWithGoogleToken } from "../services/api"; // sesuaikan path
+import { loginWithGoogleToken } from "../services/api";
+import { ThemeWrapper, useTheme } from "../components/ThemeWrapper"; // Adjust path as needed
 
 const RegisterPage: React.FC = () => {
-  const [username, setUsername] = useState("");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { themeStyles, isDarkMode } = useTheme();
+
   const sendTokenToBackend = async (token: string) => {
     try {
-      const data = await loginWithGoogleToken(token); // ✅ panggil dari services
+      const data = await loginWithGoogleToken(token);
       console.log("Login success:", data);
-      navigate("/chat"); // ✅ redirect setelah login
+      navigate("/chat");
     } catch (err) {
       console.error("Login gagal:", err);
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission logic here
-    console.log({ email, password });
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+      const token = await user.getIdToken();
+
+      await axios.post("http://localhost:8000/auth/register", {
+        token: token,
+      });
+
+      console.log("Register dan insert ke MongoDB sukses!");
+      navigate("/login");
+    } catch (err: any) {
+      console.error("Register gagal:", err);
+
+      // Jika user sempat dibuat tapi backend gagal, hapus user
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        try {
+          await deleteUser(currentUser);
+        } catch (deleteErr) {
+          console.log("Akun Firebase dihapus karena backend gagal.", deleteErr);
+        }
+      }
+
+      setError(err.message);
+    }
   };
 
   const handleGoogleLogin = async () => {
@@ -43,153 +77,134 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    /* Hero Section with 3D Background */
-    <div className="flex-1 relative bg-gradient-to-br from-indigo-900 to-purple-800 flex flex-col items-center justify-center p-4 min-h-screen text-center overflow-hidden">
-      {/* Animated 3D Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        {/* Floating Geometric Shapes */}
-        <div
-          className="absolute top-20 left-10 w-20 h-20 bg-white/10 rounded-full animate-bounce"
-          style={{ animationDelay: "0s", animationDuration: "3s" }}
-        ></div>
-        <div
-          className="absolute top-40 right-20 w-16 h-16 bg-blue-400/20 rounded-lg rotate-45 animate-pulse"
-          style={{ animationDelay: "1s" }}
-        ></div>
-        <div
-          className="absolute bottom-40 left-20 w-12 h-12 bg-purple-300/15 rounded-full animate-bounce"
-          style={{ animationDelay: "2s", animationDuration: "4s" }}
-        ></div>
-        <div
-          className="absolute bottom-20 right-10 w-24 h-24 bg-indigo-300/10 rounded-full animate-pulse"
-          style={{ animationDelay: "0.5s" }}
-        ></div>
+    <div className="flex justify-center items-center min-h-screen px-4 py-8">
+      <div className={`relative group ${themeStyles.mainBox} rounded-2xl p-8 w-full max-w-md z-30 border-2 transition-all duration-300 hover:scale-105 animate-slide-in`}>
+        {/* Card glow effect */}
+        <div className={themeStyles.buttonGlow} />
+        
+        {/* Card content */}
+        <div className="relative z-10">
+          <h1 className={`text-3xl font-bold text-center mb-2 ${themeStyles.heading}`}>
+            Create Your Account
+          </h1>
+          <p className={`text-center mb-8 ${themeStyles.mutedText}`}>
+            Set your Account for BaliPitu to continue
+          </p>
 
-        {/* Animated Grid Pattern */}
-        <div className="absolute inset-0 opacity-20">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage:
-                "linear-gradient(rgba(255,255,255,.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.1) 1px, transparent 1px)",
-              backgroundSize: "50px 50px",
-              animation: "gridMove 20s linear infinite",
-            }}
-          ></div>
+          {error && (
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleRegister} className="space-y-6">
+            <div>
+              <label
+                htmlFor="name"
+                className={`block text-sm font-medium mb-2 ${themeStyles.text}`}
+              >
+                Username
+              </label>
+              <input
+                type="text"
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className={`w-full px-4 py-3 rounded-lg border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent ${
+                  isDarkMode 
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                }`}
+                placeholder="Enter your username"
+                required
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="email"
+                className={`block text-sm font-medium mb-2 ${themeStyles.text}`}
+              >
+                Your Email
+              </label>
+              <input
+                type="email"
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={`w-full px-4 py-3 rounded-lg border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent ${
+                  isDarkMode 
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                }`}
+                placeholder="Enter your email"
+                required
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="password"
+                className={`block text-sm font-medium mb-2 ${themeStyles.text}`}
+              >
+                Password
+              </label>
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className={`w-full px-4 py-3 rounded-lg border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent ${
+                  isDarkMode 
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                }`}
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="submit"
+                className={`relative group px-8 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-opacity-50 ${themeStyles.button} border-2`}
+              >
+                <div className={themeStyles.buttonOverlay} />
+                <span className="relative z-10">Register</span>
+              </button>
+            </div>
+          </form>
+
+          <div className={`mt-6 text-center ${themeStyles.mutedText}`}>
+            Already have an account?{" "}
+            <a 
+              href="/login" 
+              className={`font-medium hover:underline transition-colors duration-200 ${themeStyles.subheading}`}
+            >
+              Log in
+            </a>
+          </div>
+
+          <div className="relative flex py-6 items-center">
+            <div className={`flex-grow border-t ${isDarkMode ? 'border-gray-600' : 'border-gray-300'}`}></div>
+            <span className={`flex-shrink mx-4 ${themeStyles.mutedText}`}>Or</span>
+            <div className={`flex-grow border-t ${isDarkMode ? 'border-gray-600' : 'border-gray-300'}`}></div>
+          </div>
+
+          <button
+            onClick={handleGoogleLogin}
+            className={`relative group w-full flex items-center justify-center gap-3 py-3 px-4 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-opacity-50 border-2 ${themeStyles.buttonSecondary}`}
+          >
+            <div className={themeStyles.buttonOverlay} />
+            <FcGoogle className="text-xl relative z-10" />
+            <span className="relative z-10">Sign up with Google</span>
+          </button>
         </div>
-
-        {/* Floating Particles */}
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-2 h-2 bg-white/20 rounded-full animate-pulse"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${2 + Math.random() * 3}s`,
-            }}
-          ></div>
-        ))}
-      </div>
-
-      {/* Glassmorphism Card Container */}
-      <div className="relative z-10 backdrop-blur-sm bg-white/5 rounded-3xl p-8 border border-white/10 shadow-2xl w-6xs max-w-6xl mx-4 lg:mx-auto">
-        <h1 className="text-2xl text-white font-bold text-center mb-2 ">
-          Create Your Account
-        </h1>
-        <p className="text-gray-300 text-center mb-6">
-          Set your Account for BaliPitu to continue
-        </p>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label
-              htmlFor="username"
-              className="block text-sm font-medium text-gray-300 mb-1"
-            >
-              Username
-            </label>
-            <input
-              type="username"
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full px-3 py-2 border text-white border-gray-300 rounded-md focus:outline-none"
-              required
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-300 mb-1"
-            >
-              Your Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 border text-white border-gray-300 rounded-md focus:outline-none"
-              required
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-300 mb-1"
-            >
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 border text-white border-gray-300 rounded-md focus:outline-none"
-              required
-            />
-          </div>
-          <div className="flex justify-end">
-            <button
-              type="submit"
-              className="w-auto py-3 px-4 bg-white hover:bg-purple-700 hover:text-white text-purple-700 font-medium rounded-md transition duration-150"
-            >
-              Continue
-            </button>
-          </div>
-        </form>
-
-        <div className="mt-5 text-center text-gray-300">
-          Already have an account?{" "}
-          <a href="/login" className="hover:underline">
-            Log in
-          </a>
-        </div>
-
-        <div className="relative flex py-5 items-center">
-          <div className="flex-grow border-t border-gray-300"></div>
-          <span className="flex-shrink mx-4 text-white">Or</span>
-          <div className="flex-grow border-t border-gray-300"></div>
-        </div>
-
-        <button
-          onClick={handleGoogleLogin}
-          className="w-full flex items-center justify-center gap-2 bg-white text-purple-700 py-2 hover:bg-purple-700 hover:text-white font-medium rounded-md transition duration-150"
-        >
-          <FcGoogle className="text-xl bg-white rounded-full" />
-          Sign in with Google
-        </button>
       </div>
     </div>
   );
 };
 
-export default RegisterPage;
 
-{
-  /*  */
-}
+
+export default RegisterPage;

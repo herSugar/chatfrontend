@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import { auth } from "./firebaseConfig";  
 // ========== Konfigurasi Axios ==========
 export const api = axios.create({
   baseURL: "http://localhost:8000/",
@@ -8,7 +8,22 @@ export const api = axios.create({
   },
 });
 
-// ========== Daftar Endpoint ==========
+// ========== Interceptor: Tambahkan token auth secara otomatis ==========
+api.interceptors.response.use(undefined, async (error) => {
+  if (error.response?.status === 401 && auth.currentUser) {
+    const newToken = await auth.currentUser.getIdToken(true);
+    localStorage.setItem("auth_token", newToken);
+    api.defaults.headers.common["Authorization"] = `Bearer ${newToken}`;
+
+    // Retry request with new token
+    error.config.headers["Authorization"] = `Bearer ${newToken}`;
+    return api.request(error.config);
+  }
+
+  return Promise.reject(error);
+});
+
+// ========== Endpoints ==========
 const ENDPOINTS = {
   ASK_AGENT: "/api/ask",
   LOGIN: "/auth/login",
@@ -24,18 +39,17 @@ const ENDPOINTS = {
     `/api/history/${firebaseUid}/${sessionId}/messages`,
   HEALTH_CHECK: "/health",
 };
+
+// ========== Fungsi Login ==========
 export const loginWithGoogleToken = async (firebaseIdToken: string) => {
-  // Kirim token Firebase ke backend untuk verifikasi dan ambil info user
   const res = await api.post(ENDPOINTS.LOGIN, { token: firebaseIdToken });
 
-  // Simpan token Firebase ke localStorage (karena ini yang dipakai untuk auth API berikutnya)
-  localStorage.setItem("auth_token", firebaseIdToken); // Penting untuk API seperti /ask
+  // Simpan token dan user info ke localStorage
+  setAuthToken(firebaseIdToken);
 
-  // Simpan email pengguna untuk keperluan frontend
   if (res.data.user?.email) {
     localStorage.setItem("user_email", res.data.user.email);
   }
-
   if (res.data.user?.firebase_uid) {
     localStorage.setItem("firebase_uid", res.data.user.firebase_uid);
   }
@@ -43,22 +57,28 @@ export const loginWithGoogleToken = async (firebaseIdToken: string) => {
   return res.data;
 };
 
+// ========== Utilitas Auth Token ==========
+export const setAuthToken = (token: string) => {
+  localStorage.setItem("auth_token", token);
+  api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+};
 
-// ========== Fungsi API ==========
+export const logout = () => {
+  localStorage.removeItem("auth_token");
+  localStorage.removeItem("user_email");
+  localStorage.removeItem("firebase_uid");
+  delete api.defaults.headers.common["Authorization"];
+};
+
+// ========== Fungsi API lainnya ==========
 export const askAgent = async (query: string, sessionId?: string) => {
   const email = localStorage.getItem("user_email");
   if (!email) throw new Error("Email tidak ditemukan. Harap login ulang.");
 
-  const body = {
-    email,
-    query,
-    session_id: sessionId || null,
-  };
-
+  const body = { email, query, session_id: sessionId || null };
   const res = await api.post(ENDPOINTS.ASK_AGENT, body);
   return res.data;
 };
-
 
 export const saveChatHistory = async (payload: any) => {
   const res = await api.post(ENDPOINTS.SAVE_HISTORY, payload);
@@ -97,8 +117,4 @@ export const addMessageToSession = async (
 export const healthCheck = async () => {
   const res = await api.get(ENDPOINTS.HEALTH_CHECK);
   return res.data;
-};
-export const logout = () => {
-  localStorage.removeItem("auth_token");
-  delete api.defaults.headers.common["Authorization"];
 };
