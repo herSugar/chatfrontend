@@ -3,6 +3,7 @@ import { useChat } from "../hooks/useChat";
 import Message from "./Message";
 import Sidebar from "./Sidebar";
 import { getSession } from "../services/api";
+import { useTheme } from "./ThemeWrapper"; // Import the theme hook
 
 interface Props {
   sessionId?: string;
@@ -20,6 +21,9 @@ export default function ChatContainer({ sessionId }: Props) {
     resetSession,
     isSessionLoaded,
   } = useChat();
+
+  // Get theme styles from context
+  const { themeStyles, isDarkMode } = useTheme();
 
   const [query, setQuery] = useState("");
   const [sessionLoading, setSessionLoading] = useState(false);
@@ -163,7 +167,7 @@ export default function ChatContainer({ sessionId }: Props) {
   console.log("Current messages:", messages);
 
   return (
-    <div className="flex h-screen bg-[#7c3aed] overflow-hidden">
+    <div className="flex h-screen overflow-hidden transition-colors duration-500">
       <Sidebar
         isCollapsed={isCollapsed}
         onToggleCollapse={() => setIsCollapsed(!isCollapsed)}
@@ -172,61 +176,67 @@ export default function ChatContainer({ sessionId }: Props) {
       <div
         className={`
           flex-1 flex flex-col overflow-hidden
-          transition-all duration-300 ease-in-out
-          ${isCollapsed ? "ml-0" : "ml-48"}
-          bg-gradient-to-b from-[#7c3aed] to-[#312e81]
+          transition-all duration-500 ease-in-out
+          ${isCollapsed ? "ml-0" : "ml-64"}
           relative
         `}
       >
-        <div className="[&>nav]:!relative [&>nav]:!top-auto">
+        {/* Header - Fixed position with proper z-index */}
+        <div className={`
+          sticky top-0 z-40 
+          backdrop-blur-md 
+          ${isDarkMode ? 'bg-black/20 border-white/20' : 'bg-white/20 border-black/20'} 
+          border-b
+        `}>
           <div className="flex items-center p-4">
             <button
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="p-2 rounded-lg hover:bg-indigo-600 transition-colors text-white"
+              className={`p-2 rounded-lg hover:${themeStyles.buttonSecondary.replace('bg-', 'hover:bg-').split(' ')[0]} transition-colors ${themeStyles.heading}`}
               aria-label="Toggle sidebar"
             >
               ☰
             </button>
-            <h1 className="ml-4 text-2xl font-bold text-white">
+            <h1 className={`ml-4 text-2xl font-bold ${themeStyles.heading}`}>
               {sessionId ? `Chat Session: ${sessionId}` : "New Chat"}
             </h1>
           </div>
         </div>
 
-        {/* Chat Messages */}
-        <div className="flex-1 h-full bg-gradient-to-b from-[#7c3aed] to-[#312e81] relative">
+        {/* Chat Messages - Scrollable area */}
+        <div className="flex-1 overflow-hidden relative">
           <div className="flex flex-col h-full min-h-0 container mx-auto pr-2">
+            {/* Messages Container */}
             <div
               className="flex-1 overflow-y-auto p-6 min-h-0 max-w-4xl mx-auto w-full custom-scrollbar"
               style={{
                 scrollbarWidth: "thin",
-                scrollbarColor: "#a5b4fc #312e81",
+                scrollbarColor: isDarkMode ? "#fb923c #1f2937" : "#ea580c #f3f4f6",
               }}
             >
               <div className="flex flex-col">
                 {sessionLoading && (
-                  <div className="text-white text-center italic mt-4">
+                  <div className={`${themeStyles.text} text-center italic mt-4`}>
                     <p>Loading session...</p>
                     <div className="mt-2">
-                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto"></div>
+                      <div className={`animate-spin rounded-full h-8 w-8 border-b-2 ${isDarkMode ? 'border-orange-400' : 'border-orange-600'} mx-auto`}></div>
                     </div>
                   </div>
                 )}
 
                 {/* Tampilkan pesan welcome hanya jika tidak ada sessionId dan tidak ada messages */}
                 {!sessionId && messages.length === 0 && !loading && !sessionLoading && (
-                  <div className="text-white text-center mt-20">
-                    <h2 className="text-4xl font-bold mb-4">Hi, User!</h2>
-                    <p className="mb-2">Start a conversation by typing your message below.</p>
-                    <p className="text-sm opacity-80">You can also upload images to get travel information about Bali destinations!</p>
+                  <div className={`${themeStyles.text} text-center mt-20`}>
+                    <h2 className={`text-4xl font-bold mb-4 ${themeStyles.heading}`}>Hi, User!</h2>
+                    <p className={`mb-2 ${themeStyles.text}`}>Start a conversation by typing your message below.</p>
+                    <p className={`text-sm ${themeStyles.mutedText}`}>You can also upload images to get travel information about Bali destinations!</p>
                   </div>
                 )}
 
                 {/* Tampilkan info jika session dimuat tapi tidak ada messages */}
                 {sessionId && !sessionLoading && messages.length === 0 && isSessionLoaded && (
-                  <div className="text-white text-center mt-20">
-                    <h2 className="text-2xl font-bold mb-4">Session Loaded</h2>
-                    <p>This session doesn't have any messages yet.</p>
+                  <div className={`${themeStyles.text} text-center mt-20`}>
+                    <h2 className={`text-2xl font-bold mb-4 ${themeStyles.heading}`}>Session Loaded</h2>
+                    <p className={themeStyles.text}>This session doesn't have any messages yet.</p>
                   </div>
                 )}
 
@@ -241,17 +251,17 @@ export default function ChatContainer({ sessionId }: Props) {
                 )}
 
                 {loading && (
-                  <div className="text-white text-center italic mt-4">
+                  <div className={`${themeStyles.text} text-center italic mt-4`}>
                     <p>Agent is typing...</p>
                     <div className="mt-2">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white mx-auto"></div>
+                      <div className={`animate-spin rounded-full h-6 w-6 border-b-2 ${isDarkMode ? 'border-orange-400' : 'border-orange-600'} mx-auto`}></div>
                     </div>
                   </div>
                 )}
 
                 {error && (
-                  <div className="bg-red-500/20 border border-red-500 rounded-lg p-4 mt-4">
-                    <p className="text-red-400 text-center font-semibold">
+                  <div className={`backdrop-blur-sm ${isDarkMode ? 'bg-red-500/20 border-red-400/50' : 'bg-red-100/60 border-red-500/50'} border rounded-lg p-4 mt-4`}>
+                    <p className={`${isDarkMode ? 'text-red-400' : 'text-red-700'} text-center font-semibold`}>
                       Error: {error}
                     </p>
                   </div>
@@ -261,116 +271,150 @@ export default function ChatContainer({ sessionId }: Props) {
               </div>
             </div>
 
-            {/* File Preview Area */}
-            {selectedFile && (
-              <div className="max-w-4xl mx-auto w-full mb-2">
-                <div className="bg-white/10 backdrop-blur-lg rounded-lg p-3 border border-white/20">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-white text-sm font-medium">Selected File:</span>
-                    <button
-                      onClick={removeSelectedFile}
-                      className="text-white/70 hover:text-white p-1 rounded transition-colors"
-                      aria-label="Remove file"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3">
-                    {filePreview && (
-                      <img 
-                        src={filePreview} 
-                        alt="Preview" 
-                        className="w-12 h-12 object-cover rounded border border-white/20"
-                      />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white text-sm truncate">{selectedFile.name}</p>
-                      <p className="text-white/60 text-xs">{formatFileSize(selectedFile.size)}</p>
+            {/* Input Area Container - Sticky at bottom */}
+            <div className="sticky bottom-0 z-30 p-4 backdrop-blur-md bg-transparent">
+              {/* File Preview Area */}
+              {selectedFile && (
+                <div className="max-w-4xl mx-auto w-full mb-2">
+                  <div className={`backdrop-blur-lg rounded-3xl p-3 border ${isDarkMode ? 'bg-black/20 border-white/20' : 'bg-white/20 border-black/20'}`}>
+                    <div className="flex items-center space-x-3">
+                      {filePreview && (
+                        <div className="relative w-12 h-12">
+                          <img 
+                            src={filePreview} 
+                            alt="Preview" 
+                            className={`w-12 h-12 object-cover rounded border ${isDarkMode ? 'border-orange-400/30' : 'border-orange-300'}`}
+                          />
+                          <button
+                            onClick={removeSelectedFile}
+                            className={`absolute -top-1 -right-1 ${isDarkMode ? 'bg-gray-800/80 hover:bg-gray-700' : 'bg-white/80 hover:bg-gray-100'} ${themeStyles.text} p-0.5 rounded-full transition-colors`}
+                            title="Hapus file"
+                            aria-label="Remove file"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className={`${themeStyles.text} text-sm truncate`}>{selectedFile.name}</p>
+                        <p className={`${themeStyles.mutedText} text-xs`}>{formatFileSize(selectedFile.size)}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Input Area */}
-            <div className="max-w-4xl mx-auto w-full flex gap-2 p-2 text-white border border-white bg-white/10 backdrop-blur-lg rounded-3xl shadow-lg items-center mb-6 mt-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                className="hidden"
-                onChange={handleFileSelect}
-                accept="image/*"
-                disabled={loading || sessionLoading}
-              />
-              
-              <label className="flex items-center cursor-pointer px-3 py-2 rounded-lg hover:bg-indigo-500 transition-colors">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
+              {/* Input Area */}
+              <div className={`max-w-4xl mx-auto w-full flex gap-2 p-2 border ${isDarkMode ? 'bg-black/20 border-white/20' : 'bg-white/20 border-black/20'} backdrop-blur-lg rounded-3xl shadow-lg items-center`}>
+                {/* Hidden file input */}
                 <input
+                  ref={fileInputRef}
                   type="file"
                   className="hidden"
                   onChange={handleFileSelect}
                   accept="image/*"
                   disabled={loading || sessionLoading}
                 />
-              </label>
-
-              <input
-                type="text"
-                placeholder={
-                  sessionLoading 
-                    ? "Loading session..." 
-                    : selectedFile 
-                      ? `File selected: ${selectedFile.name} - Add description or send...`
-                      : "Type your question or upload an image..."
-                }
-                className="flex-1 p-3 rounded-lg bg-transparent outline-none text-white placeholder-white/70"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyDown={handleKeyDown}
-                disabled={loading || sessionLoading}
-              />
-
-              <button
-                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg p-3 flex items-center justify-center disabled:opacity-50 transition-colors"
-                onClick={onSend}
-                disabled={loading || sessionLoading || (!query.trim() && !selectedFile)}
-                aria-label="Send"
-                style={{ minWidth: "48px" }}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
+                
+                {/* File upload button */}
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`p-3 bg-transparent rounded-full hover:${themeStyles.buttonSecondary.replace('bg-', 'hover:bg-').split(' ')[0]} transition-colors flex items-center justify-center group relative`}
+                  disabled={loading || sessionLoading}
+                  title="Upload gambar
+Tipe gambar: JPEG, JPG, PNG, GIF, WEBP (maks 10MB)"
+                  aria-label="Upload gambar"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M5 12h14M12 5l7 7-7 7"
-                  />
-                </svg>
-              </button>
+                  <div className={themeStyles.buttonGlow}></div>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className={`h-6 w-6 ${themeStyles.subheading} relative z-10`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                </button>
+
+                {/* Text input */}
+                <input
+                  type="text"
+                  placeholder={
+                    sessionLoading 
+                      ? "Loading session..." 
+                      : selectedFile 
+                        ? `File terpilih: ${selectedFile.name} - Tambahkan pesan...`
+                        : "Ketik pesan Anda di sini..."
+                  }
+                  className={`flex-1 p-3 rounded-lg bg-transparent outline-none ${themeStyles.text} placeholder-opacity-70`}
+                  style={{
+                    color: isDarkMode ? '#e5e7eb' : '#374151',
+                    '::placeholder': {
+                      color: isDarkMode ? '#9ca3af' : '#6b7280'
+                    }
+                  }}
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  disabled={loading || sessionLoading}
+                />
+
+                {/* Send button */}
+                <button
+                  className={`bg-transparent hover:${themeStyles.buttonSecondary.replace('bg-', 'hover:bg-').split(' ')[0]} ${themeStyles.subheading} rounded-full p-3 flex items-center justify-center transition-colors group relative`}
+                  onClick={onSend}
+                  disabled={loading || sessionLoading || (!query.trim() && !selectedFile)}
+                  aria-label="Send message"
+                  style={{ minWidth: "48px" }}
+                  title="Kirim pesan"
+                >
+                  <div className={themeStyles.buttonGlow}></div>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5 relative z-10"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M5 12h14M12 5l7 7-7 7"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Custom scrollbar styles */}
+        <style>{`
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-track {
+            background: ${isDarkMode ? 'rgba(31, 41, 55, 0.3)' : 'rgba(243, 244, 246, 0.3)'};
+            border-radius: 4px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: ${isDarkMode ? '#fb923c' : '#ea580c'};
+            border-radius: 4px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: ${isDarkMode ? '#f97316' : '#dc2626'};
+          }
+        `}</style>
       </div>
     </div>
   );

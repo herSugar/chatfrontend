@@ -5,6 +5,8 @@ export interface ChatMessage {
   sender: string;
   text: string;
   timestamp?: string;
+  image?: string; // Base64 image data or URL
+  fileName?: string; // Optional file name for display
 }
 
 interface Props {
@@ -25,6 +27,7 @@ export default function Message({ message }: Props) {
 
   let content: React.ReactNode = parsedMessage.text;
 
+  // Handle JSON structured content
   if (jsonData && jsonData.title && jsonData.categories) {
     content = (
       <div className="bg-white/90 rounded-lg p-4 shadow-md text-black max-w-xl">
@@ -47,17 +50,39 @@ export default function Message({ message }: Props) {
     );
   }
 
+  // Debug: Log the message to see what we're receiving
+  // console.log("Message data:", parsedMessage);
+
   return (
     <div className="flex flex-col">
-      <div
-        className={`max-w-[80%] p-3 rounded-lg mb-1 break-words whitespace-pre-wrap ${
-          isUser
-            ? "bg-indigo-600 text-white ml-auto"
-            : "bg-gray-200 text-black mr-auto"
-        }`}
-      >
-        {content}
-      </div>
+      {/* Display filename bubble if present */}
+      {parsedMessage.fileName && (
+        <div
+          className={`max-w-[80%] p-2 rounded-lg mb-1 ${
+            isUser
+              ? "bg-orange-600 text-gray-400 ml-auto"
+              : "bg-gray-300 text-black mr-auto"
+          }`}
+        >
+          <div className="flex items-center gap-2 text-sm">
+            🖼️ {parsedMessage.fileName}
+          </div>
+        </div>
+      )}
+      
+      {/* Display text message bubble */}
+      {parsedMessage.text && parsedMessage.text.trim() && (
+        <div
+          className={`max-w-[80%] p-3 rounded-lg mb-1 break-words whitespace-pre-wrap ${
+            isUser
+              ? "bg-orange-600 text-white ml-auto"
+              : "bg-gray-300 text-black mr-auto"
+          }`}
+        >
+          {content}
+        </div>
+      )}
+      
       <div
         className={`text-xs text-gray-400 ${
           isUser ? "text-right pr-1" : "text-left pl-1"
@@ -71,23 +96,31 @@ export default function Message({ message }: Props) {
 
 // Mengubah message dari OpenAI-style ke format standar ChatMessage
 function normalizeMessage(msg: any): ChatMessage {
+  // Handle different message formats
   if ("role" in msg && "content" in msg) {
     return {
       sender: msg.role === "user" ? "You" : "Assistant",
-      text: msg.content,
+      text: msg.content || "",
       timestamp: msg.timestamp ?? new Date().toISOString(),
+      image: msg.image,
+      fileName: msg.fileName,
     };
   }
 
+  // Handle direct ChatMessage format
   return {
     sender: msg.sender ?? "Unknown",
     text: msg.text ?? "",
     timestamp: msg.timestamp ?? new Date().toISOString(),
+    image: msg.image,
+    fileName: msg.fileName,
   };
 }
 
 // Mengekstrak JSON dari isi text jika ada
 function extractJSON(text: string): any | null {
+  if (!text) return null;
+  
   const start = text.indexOf("{");
   const end = text.lastIndexOf("}");
   if (start === -1 || end === -1) return null;
