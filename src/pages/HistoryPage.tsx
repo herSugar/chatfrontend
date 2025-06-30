@@ -2,13 +2,15 @@ import React, { useEffect, useRef, useState } from "react";
 import { api, getUserHistory, deleteSession } from "../services/api";
 import Sidebar from "../components/Sidebar";
 import { useNavigate } from "react-router-dom";
-import { FaTrash } from "react-icons/fa";
+import { FaTrash, FaSave} from "react-icons/fa";
 import { useTheme } from "../components/ThemeWrapper"; // Only need useTheme hook
 
 type Message = {
   role: string;
   content: string;
   timestamp: string;
+  file_name?: string,
+  image?: string
 };
 
 type HistorySession = {
@@ -58,6 +60,45 @@ const HistoryPage: React.FC = () => {
       scrollToBottom();
     }
   };
+
+const handleSaveSession = async (session: HistorySession) => {
+  const token = localStorage.getItem("auth_token");
+  const firebaseUid = localStorage.getItem("firebase_uid");
+  const sessionId = session.session_id;
+
+  if (!token || !firebaseUid) {
+    alert("Kredensial tidak ditemukan. Silakan login untuk menyimpan ke bookmark.");
+    return;
+  }
+
+  try {
+    const payload = {
+      messages: session.messages,
+      timestamp: session.timestamp,
+    };
+    console.log("Payload yang dikirim ke /api/history/save:", payload);
+
+    const response = await fetch(`http://localhost:8000/api/history/save/${firebaseUid}/${sessionId}`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.detail || "Gagal menyimpan bookmark.");
+    }
+
+    alert("Sesi berhasil disimpan ke bookmark!");
+  } catch (err) {
+    console.error("Gagal menyimpan sesi:", err);
+    alert("Terjadi kesalahan saat menyimpan.");
+  }
+};
+
 
   const handleDeleteSession = async (sessionId: string) => {
     const confirmDelete = window.confirm("Apakah Anda yakin ingin menghapus sesi ini?");
@@ -188,24 +229,42 @@ const HistoryPage: React.FC = () => {
                       <div className={`absolute inset-0 ${isDarkMode ? 'bg-orange-400/10' : 'bg-orange-600/10'} rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm -z-10`} />
                       
                       {/* Delete button */}
-                      <button
-                        onClick={e => {
+                        <div className="absolute top-3 right-3 flex gap-2 z-10">
+                        <button
+                          onClick={e => {
+                          e.stopPropagation();
+                          handleSaveSession(session);
+                          }}
+                          className={`
+                          bg-blue-500 hover:bg-blue-600 
+                          text-white p-2 rounded-full
+                          transition-all duration-300 
+                          hover:scale-110 shadow-lg
+                          opacity-0 group-hover:opacity-100
+                          focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-400
+                          `}
+                          aria-label="Save session"
+                        >
+                          <FaSave className="text-xs" />
+                        </button>
+                        <button
+                          onClick={e => {
                           e.stopPropagation();
                           handleDeleteSession(session.session_id);
-                        }}
-                        className={`
-                          absolute top-3 right-3 
+                          }}
+                          className={`
                           bg-red-500 hover:bg-red-600 
                           text-white p-2 rounded-full
                           transition-all duration-300 
                           hover:scale-110 shadow-lg
                           opacity-0 group-hover:opacity-100
                           focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-400
-                        `}
-                        aria-label="Delete session"
-                      >
-                        <FaTrash className="text-xs" />
-                      </button>
+                          `}
+                          aria-label="Delete session"
+                        >
+                          <FaTrash className="text-xs" />
+                        </button>
+                        </div>
 
                       {/* Session info */}
                       <div className="space-y-3">

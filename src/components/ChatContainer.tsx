@@ -3,6 +3,9 @@ import { useChat } from "../hooks/useChat";
 import Message from "./Message";
 import Sidebar from "./Sidebar";
 import { getSession } from "../services/api";
+import { useNavigate } from "react-router-dom"; // pastikan sudah import ini
+
+
 import { useTheme } from "./ThemeWrapper"; // Import the theme hook
 
 interface Props {
@@ -22,6 +25,7 @@ export default function ChatContainer({ sessionId }: Props) {
     isSessionLoaded,
   } = useChat();
 
+  const navigate = useNavigate(); 
   // Get theme styles from context
   const { themeStyles, isDarkMode } = useTheme();
 
@@ -53,6 +57,16 @@ export default function ChatContainer({ sessionId }: Props) {
     }
     setPrevSessionId(sessionId);
   }, [sessionId, prevSessionId]);
+
+  useEffect(() => {
+  if (!sessionId) {
+    const localSession = localStorage.getItem("chat_session_id");
+    if (localSession) {
+      // Redirect ke halaman chat dengan session yang sudah ada
+      navigate(`/chat/${localSession}`);
+    }
+  }
+}, [sessionId, navigate]);
 
   useEffect(() => {
     const fetchSession = async () => {
@@ -145,6 +159,45 @@ export default function ChatContainer({ sessionId }: Props) {
       console.error("Error sending message:", error);
     }
   };
+const effectiveSessionId = sessionId || localStorage.getItem("chat_session_id");
+  const handleSaveBookmark = async () => {
+  const token = localStorage.getItem("auth_token");
+  const firebaseUid = localStorage.getItem("firebase_uid");
+  const currentSessionId = sessionId || localStorage.getItem("chat_session_id");
+
+  if (!token || !firebaseUid || !currentSessionId) {
+    alert("Kredensial tidak ditemukan. Silakan login.");
+    return;
+  }
+
+  try {
+    const payload = {
+      messages,
+      timestamp: new Date().toISOString(),
+    };
+
+    const response = await fetch(`http://localhost:8000/api/history/save/${firebaseUid}/${currentSessionId}`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.detail || "Gagal menyimpan bookmark.");
+    }
+
+    alert("Sesi berhasil disimpan ke bookmark!");
+  } catch (error) {
+    console.error("Error menyimpan bookmark:", error);
+    alert("Gagal menyimpan ke bookmark.");
+  }
+};
+  
+
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && !loading && !sessionLoading) {
@@ -152,6 +205,8 @@ export default function ChatContainer({ sessionId }: Props) {
       onSend();
     }
   };
+  
+
 
   // Format file size for display
   const formatFileSize = (bytes: number) => {
@@ -197,7 +252,19 @@ export default function ChatContainer({ sessionId }: Props) {
               ☰
             </button>
             <h1 className={`ml-4 text-2xl font-bold ${themeStyles.heading}`}>
-              {sessionId ? `Chat Session: ${sessionId}` : "New Chat"}
+             {sessionId ? "Ongoing Chat" : "New Chat"}
+
+
+              {effectiveSessionId && (
+  <button
+    onClick={handleSaveBookmark}
+    className={`ml-4 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${isDarkMode ? 'bg-orange-500/20 hover:bg-orange-600/30 text-orange-200' : 'bg-orange-100 hover:bg-orange-200 text-orange-800'}`}
+  >
+    📌 Simpan ke Bookmark
+  </button>
+)}
+
+
             </h1>
           </div>
         </div>

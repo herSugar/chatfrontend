@@ -27,7 +27,8 @@ api.interceptors.response.use(undefined, async (error) => {
 const ENDPOINTS = {
   ASK_AGENT: "/api/ask",
   LOGIN: "/auth/login",
-  SAVE_HISTORY: "/api/history/save",
+ SAVE_HISTORY: (firebaseUid: string, sessionId: string) =>
+  `/api/history/save/${firebaseUid}/${sessionId}`,
   GET_USER_HISTORY: (firebaseUid: string) => `/api/history/${firebaseUid}`,
   GET_SESSION: (firebaseUid: string, sessionId: string) =>
     `/api/history/${firebaseUid}/${sessionId}`,
@@ -80,10 +81,6 @@ export const askAgent = async (query: string, sessionId?: string) => {
   return res.data;
 };
 
-export const saveChatHistory = async (payload: any) => {
-  const res = await api.post(ENDPOINTS.SAVE_HISTORY, payload);
-  return res.data;
-};
 
 export const getUserHistory = async (firebaseUid: string) => {
   const res = await api.get(ENDPOINTS.GET_USER_HISTORY(firebaseUid));
@@ -116,5 +113,10 @@ export const addMessageToSession = async (
 
 export const healthCheck = async () => {
   const res = await api.get(ENDPOINTS.HEALTH_CHECK);
+  return res.data;
+};
+
+export const getUserBookmarks = async (firebaseUid: string) => {
+  const res = await api.get(`/api/bookmark/${firebaseUid}`);
   return res.data;
 };

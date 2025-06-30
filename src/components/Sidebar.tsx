@@ -25,8 +25,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
       setActiveItem('chat');
     } else if (location.pathname.startsWith('/history')) {
       setActiveItem('history');
-    } else if (location.pathname.startsWith('/saves')) {
-      setActiveItem('saves');
+    } else if (location.pathname.startsWith('/bookmark')) {
+      setActiveItem('bookmark');
     } else if (location.pathname.startsWith('/settings')) {
       setActiveItem('settings');
     } else if (location.pathname.startsWith('/profile')) {
@@ -58,10 +58,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
       onClick: () => navigate('/history'),
     },
     {
-      id: 'saves',
-      label: 'Saves',
+      id: 'bookmark',
+      label: 'My Bookmark',
       icon: '📄',
-      onClick: () => navigate('/saves'),
+      onClick: () => navigate('/bookmark'),
     },
     {
       id: 'settings',

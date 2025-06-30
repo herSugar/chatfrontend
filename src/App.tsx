@@ -42,6 +42,7 @@ import RegisterPage from "./pages/RegisterPage";
 import SettingPages from "./pages/SettingPages";
 import ChatWithImage from "./pages/ChatWithImage";
 import { ThemeWrapper } from "./components/ThemeWrapper"; // Adjust path as needed
+import BookmarkPage from "./pages/BookmarkPage";
 
 const App: React.FC = () => {
   return (
@@ -62,6 +63,8 @@ const App: React.FC = () => {
             <Route path="/history" element={<HistoryPage />} />
             <Route path="/settings" element={<SettingPages />} />
             <Route path="/image" element={<ChatWithImage />} />
+            <Route path="/bookmark" element={<BookmarkPage />} />
+
           </Routes>
         </div>
       </Router>

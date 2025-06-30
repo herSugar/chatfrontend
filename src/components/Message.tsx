@@ -17,6 +17,9 @@ export default function Message({ message }: Props) {
   const parsedMessage = normalizeMessage(message);
   const isUser = parsedMessage.sender === "You";
   const jsonData = extractJSON(parsedMessage.text);
+  console.log("🧪 Raw text:", parsedMessage);
+console.log("🧪 Parsed JSON:", jsonData);
+
 
   const formattedTime = parsedMessage.timestamp
     ? new Date(parsedMessage.timestamp).toLocaleTimeString([], {
@@ -54,44 +57,37 @@ export default function Message({ message }: Props) {
   // console.log("Message data:", parsedMessage);
 
   return (
-    <div className="flex flex-col">
-      {/* Display filename bubble if present */}
-      {parsedMessage.fileName && (
-        <div
-          className={`max-w-[80%] p-2 rounded-lg mb-1 ${
-            isUser
-              ? "bg-orange-600 text-gray-400 ml-auto"
-              : "bg-gray-300 text-black mr-auto"
-          }`}
-        >
-          <div className="flex items-center gap-2 text-sm">
-            🖼️ {parsedMessage.fileName}
-          </div>
-        </div>
-      )}
-      
-      {/* Display text message bubble */}
-      {parsedMessage.text && parsedMessage.text.trim() && (
-        <div
-          className={`max-w-[80%] p-3 rounded-lg mb-1 break-words whitespace-pre-wrap ${
-            isUser
-              ? "bg-orange-600 text-white ml-auto"
-              : "bg-gray-300 text-black mr-auto"
-          }`}
-        >
-          {content}
-        </div>
-      )}
-      
-      <div
-        className={`text-xs text-gray-400 ${
-          isUser ? "text-right pr-1" : "text-left pl-1"
-        }`}
-      >
-        {formattedTime}
+  <div className="flex flex-col">
+    {/* Display filename bubble if present */}
+
+    {/* ✅ Display image if present */}
+    {parsedMessage.image && (
+  <div
+    className={`max-w-[80%] mb-2 ${isUser ? "ml-auto" : "mr-auto"}`}
+  >
+    <img
+      src={`data:image/jpeg;base64,${parsedMessage.image}`}  // ✅ JPEG khusus
+      alt={parsedMessage.fileName || "Uploaded image"}
+      className="rounded-lg max-h-60 object-cover"
+    />
+  </div>
+)}
+
+
+    {/* Display text message bubble */}
+    {parsedMessage.text && parsedMessage.text.trim() && (
+      <div className={`max-w-[80%] p-3 rounded-lg mb-1 break-words whitespace-pre-wrap ${isUser ? "bg-orange-600 text-white ml-auto" : "bg-gray-300 text-black mr-auto"}`}>
+        {content}
       </div>
+    )}
+
+    {/* Timestamp */}
+    <div className={`text-xs text-gray-400 ${isUser ? "text-right pr-1" : "text-left pl-1"}`}>
+      {formattedTime}
     </div>
-  );
+  </div>
+);
+
 }
 
 // Mengubah message dari OpenAI-style ke format standar ChatMessage
