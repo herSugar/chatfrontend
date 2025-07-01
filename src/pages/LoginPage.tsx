@@ -11,6 +11,8 @@ import { FaGithub, FaEnvelope } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { loginWithGoogleToken } from "../services/api";
 import { useTheme } from "../components/ThemeWrapper"; // Adjust the import path as needed
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -35,8 +37,10 @@ const LoginPage: React.FC = () => {
       const result = await signInWithPopup(auth, provider);
       const token = await result.user.getIdToken();
       await sendTokenToBackend(token);
+      toast.success("Login berhasil!", { position: "top-center" });
     } catch (err) {
       console.error("Google login error:", err);
+      toast.error("Login gagal!", { position: "top-center" });
     }
   };
 
@@ -57,8 +61,10 @@ const LoginPage: React.FC = () => {
       const result = await signInWithEmailAndPassword(auth, email, password);
       const token = await result.user.getIdToken();
       await sendTokenToBackend(token);
+      toast.success("Login berhasil!", { position: "top-center" });
     } catch (err) {
       console.error("Email/password login error:", err);
+      toast.error("Login gagal! Email atau password salah.", { position: "top-center" });
     }
   };
 
