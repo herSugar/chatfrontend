@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { sendPasswordResetEmail } from "firebase/auth";
 import {
   GoogleAuthProvider,
   GithubAuthProvider,
@@ -26,6 +27,21 @@ const LoginPage: React.FC = () => {
       navigate("/chat");
     } catch (err) {
       console.error("Login gagal:", err);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      alert("Masukkan email terlebih dahulu.");
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert("Link reset password telah dikirim ke email kamu.");
+    } catch (error) {
+      console.error("Gagal mengirim email reset password:", error);
+      alert("Gagal mengirim email reset password. Pastikan email sudah benar.");
     }
   };
 
@@ -65,14 +81,18 @@ const LoginPage: React.FC = () => {
   return (
     <div className="flex justify-center items-center min-h-screen px-4 py-8">
       {/* Login Card */}
-      <div className={`backdrop-blur-sm ${themeStyles.card} border rounded-2xl p-8 w-full max-w-md animate-slide-in shadow-2xl`}>
+      <div
+        className={`backdrop-blur-sm ${themeStyles.card} border rounded-2xl p-8 w-full max-w-md animate-slide-in shadow-2xl`}
+      >
         {/* Logo Container */}
         <div className="flex justify-center mb-8">
-          <div className={`${themeStyles.logoContainer} rounded-2xl p-4 border shadow-lg`}>
-            <img 
+          <div
+            className={`${themeStyles.logoContainer} rounded-2xl p-4 border shadow-lg`}
+          >
+            <img
               src={isDarkMode ? "image/logop-dark.png" : "image/logos.png"}
-              alt="logo" 
-              className="w-60 h-auto max-w-full transition-opacity duration-300" 
+              alt="logo"
+              className="w-60 h-auto max-w-full transition-opacity duration-300"
               onError={(e) => {
                 // Fallback to original logo if dark mode logo doesn't exist
                 e.currentTarget.src = "image/logop.png";
@@ -100,14 +120,25 @@ const LoginPage: React.FC = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            <div className="text-right">
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                className="text-sm text-orange-500 hover:underline transition-colors duration-300"
+              >
+                Forgot Password?
+              </button>
+            </div>
           </div>
-          
+
           <button
             type="submit"
             className={`group relative w-full flex items-center justify-center gap-2 ${themeStyles.button} py-3 px-6 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl`}
           >
             <div className={themeStyles.buttonGlow}></div>
-            <div className={`absolute inset-0 ${themeStyles.buttonOverlay} rounded-lg transition-all duration-300`}></div>
+            <div
+              className={`absolute inset-0 ${themeStyles.buttonOverlay} rounded-lg transition-all duration-300`}
+            ></div>
             <FaEnvelope className="text-lg relative z-10" />
             <span className="relative z-10">Login with Email</span>
           </button>
@@ -116,8 +147,8 @@ const LoginPage: React.FC = () => {
         {/* Register Link */}
         <p className={`flex justify-center mt-6 ${themeStyles.text} text-sm`}>
           Don't have an account?&nbsp;
-          <a 
-            href="/register" 
+          <a
+            href="/register"
             className={`${themeStyles.subheading} hover:underline font-medium transition-colors duration-300`}
           >
             Register
@@ -126,9 +157,17 @@ const LoginPage: React.FC = () => {
 
         {/* Divider */}
         <div className="flex items-center gap-3 my-6">
-          <div className={`h-px flex-1 ${isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}></div>
+          <div
+            className={`h-px flex-1 ${
+              isDarkMode ? "bg-gray-600" : "bg-gray-300"
+            }`}
+          ></div>
           <p className={`${themeStyles.mutedText} text-sm font-medium`}>Or</p>
-          <div className={`h-px flex-1 ${isDarkMode ? 'bg-gray-600' : 'bg-gray-300'}`}></div>
+          <div
+            className={`h-px flex-1 ${
+              isDarkMode ? "bg-gray-600" : "bg-gray-300"
+            }`}
+          ></div>
         </div>
 
         {/* Social Login Buttons */}
@@ -137,25 +176,16 @@ const LoginPage: React.FC = () => {
             onClick={handleGoogleLogin}
             className={`group relative w-full flex items-center justify-center gap-3 ${themeStyles.buttonSecondary} py-3 px-6 rounded-lg font-medium border transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg`}
           >
-            <div className={`absolute inset-0 ${themeStyles.buttonOverlay} rounded-lg transition-all duration-300`}></div>
+            <div
+              className={`absolute inset-0 ${themeStyles.buttonOverlay} rounded-lg transition-all duration-300`}
+            ></div>
             <FcGoogle className="text-xl relative z-10" />
             <span className="relative z-10">Login with Google</span>
-          </button>
-          
-          <button
-            onClick={handleGithubLogin}
-            className={`group relative w-full flex items-center justify-center gap-3 ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600 text-white border-gray-600' : 'bg-gray-800 hover:bg-gray-900 text-white border-gray-700'} py-3 px-6 rounded-lg font-medium border transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-lg`}
-          >
-            <div className={`absolute inset-0 ${isDarkMode ? 'bg-gradient-to-r from-gray-600/0 to-gray-500/0 group-hover:from-gray-600/20 group-hover:to-gray-500/20' : 'bg-gradient-to-r from-gray-700/0 to-gray-600/0 group-hover:from-gray-700/20 group-hover:to-gray-600/20'} rounded-lg transition-all duration-300`}></div>
-            <FaGithub className="text-xl relative z-10" />
-            <span className="relative z-10">Login with GitHub</span>
           </button>
         </div>
       </div>
     </div>
   );
 };
-
-
 
 export default LoginPage;

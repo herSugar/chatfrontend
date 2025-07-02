@@ -2,15 +2,16 @@ import React, { useEffect, useRef, useState } from "react";
 import { api, getUserHistory, deleteSession } from "../services/api";
 import Sidebar from "../components/Sidebar";
 import { useNavigate } from "react-router-dom";
-import { FaTrash, FaSave} from "react-icons/fa";
+import { FaTrash, FaSave } from "react-icons/fa";
 import { useTheme } from "../components/ThemeWrapper"; // Only need useTheme hook
+import DeleteSessionDialog from "../components/DeleteSessionDialog";
 
 type Message = {
   role: string;
   content: string;
   timestamp: string;
-  file_name?: string,
-  image?: string
+  file_name?: string;
+  image?: string;
 };
 
 type HistorySession = {
@@ -28,6 +29,24 @@ const HistoryPage: React.FC = () => {
   const historyEndRef = useRef<HTMLDivElement | null>(null);
   const navigate = useNavigate();
   const { themeStyles, isDarkMode } = useTheme();
+  const formatTime = (timestamp: string) => {
+    // Parse timestamp as UTC, then add 8 hours for WITA (GMT+8)
+    const date = new Date(timestamp);
+    // Get UTC time in ms, add 8 hours in ms
+    const witaDate = new Date(date.getTime() + 8 * 60 * 60 * 1000);
+    return (
+      witaDate.toLocaleString("id-ID", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour12: false,
+        timeZone: "Asia/Makassar", // WITA time zone
+      }) + " WITA"
+    );
+  };
 
   const scrollToBottom = () => {
     historyEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -61,48 +80,52 @@ const HistoryPage: React.FC = () => {
     }
   };
 
-const handleSaveSession = async (session: HistorySession) => {
-  const token = localStorage.getItem("auth_token");
-  const firebaseUid = localStorage.getItem("firebase_uid");
-  const sessionId = session.session_id;
+  const handleSaveSession = async (session: HistorySession) => {
+    const token = localStorage.getItem("auth_token");
+    const firebaseUid = localStorage.getItem("firebase_uid");
+    const sessionId = session.session_id;
 
-  if (!token || !firebaseUid) {
-    alert("Kredensial tidak ditemukan. Silakan login untuk menyimpan ke bookmark.");
-    return;
-  }
-
-  try {
-    const payload = {
-      messages: session.messages,
-      timestamp: session.timestamp,
-    };
-    console.log("Payload yang dikirim ke /api/history/save:", payload);
-
-    const response = await fetch(`http://localhost:8000/api/history/save/${firebaseUid}/${sessionId}`, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${token}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const err = await response.json();
-      throw new Error(err.detail || "Gagal menyimpan bookmark.");
+    if (!token || !firebaseUid) {
+      alert(
+        "Kredensial tidak ditemukan. Silakan login untuk menyimpan ke bookmark."
+      );
+      return;
     }
 
-    alert("Sesi berhasil disimpan ke bookmark!");
-  } catch (err) {
-    console.error("Gagal menyimpan sesi:", err);
-    alert("Terjadi kesalahan saat menyimpan.");
-  }
-};
+    try {
+      const payload = {
+        messages: session.messages,
+        timestamp: new Date().toISOString(),
+      };
+      console.log("Payload yang dikirim ke /api/history/save:", payload);
 
+      const response = await fetch(
+        `http://localhost:8000/api/history/save/${firebaseUid}/${sessionId}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.detail || "Gagal menyimpan bookmark.");
+      }
+
+      alert("Sesi berhasil disimpan ke bookmark!");
+    } catch (err) {
+      console.error("Gagal menyimpan sesi:", err);
+      alert("Terjadi kesalahan saat menyimpan.");
+    }
+  };
 
   const handleDeleteSession = async (sessionId: string) => {
-    const confirmDelete = window.confirm("Apakah Anda yakin ingin menghapus sesi ini?");
-    if (!confirmDelete) return;
+    // const confirmDelete = window.confirm("Apakah Anda yakin ingin menghapus sesi ini?");
+    // if (!confirmDelete) return;
 
     try {
       const token = localStorage.getItem("auth_token");
@@ -119,7 +142,9 @@ const handleSaveSession = async (session: HistorySession) => {
       await deleteSession(firebaseUid, sessionId);
 
       // Perbarui daftar riwayat
-      setHistory(prev => prev.filter(session => session.session_id !== sessionId));
+      setHistory((prev) =>
+        prev.filter((session) => session.session_id !== sessionId)
+      );
     } catch (err) {
       console.error("Gagal menghapus sesi:", err);
       alert("Terjadi kesalahan saat menghapus sesi.");
@@ -127,8 +152,12 @@ const handleSaveSession = async (session: HistorySession) => {
   };
 
   const getSessionSummary = (messages: Message[]) => {
-    const lastAgent = [...messages].reverse().find(msg => msg.role === "agent");
-    return lastAgent ? lastAgent.content.slice(0, 150) + "..." : "Tidak ada ringkasan.";
+    const lastAgent = [...messages]
+      .reverse()
+      .find((msg) => msg.role === "agent");
+    return lastAgent
+      ? lastAgent.content.slice(0, 150) + "..."
+      : "Tidak ada ringkasan.";
   };
 
   useEffect(() => {
@@ -149,21 +178,31 @@ const handleSaveSession = async (session: HistorySession) => {
         className={`
           flex-1 flex flex-col overflow-hidden
           transition-all duration-500 ease-in-out
-          ${isCollapsed ? 'ml-0' : 'ml-64'}
+          ${isCollapsed ? "ml-0" : "ml-64"}
           relative
         `}
       >
         {/* Navbar with toggle button - Fixed position with proper z-index */}
-        <div className={`
+        <div
+          className={`
           sticky top-0 z-40 
           backdrop-blur-md 
-          ${isDarkMode ? 'bg-black/20 border-white/20' : 'bg-white/20 border-black/20'} 
+          ${
+            isDarkMode
+              ? "bg-black/20 border-white/20"
+              : "bg-white/20 border-black/20"
+          } 
           border-b
-        `}>
+        `}
+        >
           <div className="flex items-center p-4">
             <button
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className={`p-2 rounded-lg hover:${themeStyles.buttonSecondary.replace('bg-', 'hover:bg-').split(' ')[0]} transition-colors ${themeStyles.heading}`}
+              className={`p-2 rounded-lg hover:${
+                themeStyles.buttonSecondary
+                  .replace("bg-", "hover:bg-")
+                  .split(" ")[0]
+              } transition-colors ${themeStyles.heading}`}
               aria-label="Toggle sidebar"
             >
               ☰
@@ -177,32 +216,68 @@ const handleSaveSession = async (session: HistorySession) => {
         {/* History content - Scrollable area */}
         <div className="flex-1 overflow-hidden relative">
           <div className="flex flex-col h-full min-h-0 container mx-auto pr-2">
-            <div 
+            <div
               className="flex-1 overflow-y-auto p-6 min-h-0 custom-scrollbar"
               style={{
                 scrollbarWidth: "thin",
-                scrollbarColor: isDarkMode ? "#fb923c #1f2937" : "#ea580c #f3f4f6",
+                scrollbarColor: isDarkMode
+                  ? "#fb923c #1f2937"
+                  : "#ea580c #f3f4f6",
               }}
             >
               {loading ? (
-                <div className={`flex-1 flex items-center justify-center ${themeStyles.text} text-lg`}>
+                <div
+                  className={`flex-1 flex items-center justify-center ${themeStyles.text} text-lg`}
+                >
                   <div className="flex items-center space-x-2">
-                    <div className={`w-4 h-4 ${isDarkMode ? 'bg-orange-400' : 'bg-orange-600'} rounded-full animate-pulse`}></div>
-                    <div className={`w-4 h-4 ${isDarkMode ? 'bg-orange-400' : 'bg-orange-600'} rounded-full animate-pulse`} style={{ animationDelay: '0.2s' }}></div>
-                    <div className={`w-4 h-4 ${isDarkMode ? 'bg-orange-400' : 'bg-orange-600'} rounded-full animate-pulse`} style={{ animationDelay: '0.4s' }}></div>
+                    <div
+                      className={`w-4 h-4 ${
+                        isDarkMode ? "bg-orange-400" : "bg-orange-600"
+                      } rounded-full animate-pulse`}
+                    ></div>
+                    <div
+                      className={`w-4 h-4 ${
+                        isDarkMode ? "bg-orange-400" : "bg-orange-600"
+                      } rounded-full animate-pulse`}
+                      style={{ animationDelay: "0.2s" }}
+                    ></div>
+                    <div
+                      className={`w-4 h-4 ${
+                        isDarkMode ? "bg-orange-400" : "bg-orange-600"
+                      } rounded-full animate-pulse`}
+                      style={{ animationDelay: "0.4s" }}
+                    ></div>
                     <span className="ml-3">Memuat riwayat...</span>
                   </div>
                 </div>
               ) : history.length === 0 ? (
-                <div className={`flex-1 flex flex-col items-center justify-center ${themeStyles.text} text-lg space-y-4 mt-20`}>
-                  <div className={`w-20 h-20 ${isDarkMode ? 'bg-orange-500/20' : 'bg-orange-100/60'} rounded-full flex items-center justify-center shadow-lg`}>
-                    <span className={`text-2xl ${themeStyles.subheading}`}>📚</span>
+                <div
+                  className={`flex-1 flex flex-col items-center justify-center ${themeStyles.text} text-lg space-y-4 mt-20`}
+                >
+                  <div
+                    className={`w-20 h-20 ${
+                      isDarkMode ? "bg-orange-500/20" : "bg-orange-100/60"
+                    } rounded-full flex items-center justify-center shadow-lg`}
+                  >
+                    <span className={`text-2xl ${themeStyles.subheading}`}>
+                      📚
+                    </span>
                   </div>
-                  <p className={`${themeStyles.heading} text-2xl font-bold`}>Tidak ada riwayat</p>
-                  <p className={`${themeStyles.mutedText} text-center`}>Mulai percakapan baru untuk melihat riwayat di sini</p>
+                  <p className={`${themeStyles.heading} text-2xl font-bold`}>
+                    Tidak ada riwayat
+                  </p>
+                  <p className={`${themeStyles.mutedText} text-center`}>
+                    Mulai percakapan baru untuk melihat riwayat di sini
+                  </p>
                   <button
-                    onClick={() => navigate('/chat')}
-                    className={`mt-4 px-6 py-3 ${isDarkMode ? 'bg-orange-500/20 hover:bg-orange-500/30 border-orange-400/40' : 'bg-orange-100/60 hover:bg-orange-200/60 border-orange-500/40'} border rounded-xl transition-all duration-300 hover:scale-105 ${themeStyles.text} font-medium`}
+                    onClick={() => navigate("/chat")}
+                    className={`mt-4 px-6 py-3 ${
+                      isDarkMode
+                        ? "bg-orange-500/20 hover:bg-orange-500/30 border-orange-400/40"
+                        : "bg-orange-100/60 hover:bg-orange-200/60 border-orange-500/40"
+                    } border rounded-xl transition-all duration-300 hover:scale-105 ${
+                      themeStyles.text
+                    } font-medium`}
                   >
                     Mulai Chat Baru
                   </button>
@@ -215,25 +290,33 @@ const handleSaveSession = async (session: HistorySession) => {
                       className={`
                         group relative p-6 rounded-xl shadow-lg transition-all duration-300 
                         hover:scale-105 hover:shadow-2xl cursor-pointer
-                        ${isDarkMode ? 'bg-black/20 border-white/20 hover:bg-black/30' : 'bg-white/20 border-black/20 hover:bg-white/30'} 
+                        ${
+                          isDarkMode
+                            ? "bg-black/20 border-white/20 hover:bg-black/30"
+                            : "bg-white/20 border-black/20 hover:bg-white/30"
+                        } 
                         border backdrop-blur-sm
                         animate-slide-in
                       `}
-                      style={{ 
+                      style={{
                         animationDelay: `${index * 0.1}s`,
-                        animationFillMode: 'both'
+                        animationFillMode: "both",
                       }}
                       onClick={() => navigate(`/chat/${session.session_id}`)}
                     >
                       {/* Glow effect on hover */}
-                      <div className={`absolute inset-0 ${isDarkMode ? 'bg-orange-400/10' : 'bg-orange-600/10'} rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm -z-10`} />
-                      
+                      <div
+                        className={`absolute inset-0 ${
+                          isDarkMode ? "bg-orange-400/10" : "bg-orange-600/10"
+                        } rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-sm -z-10`}
+                      />
+
                       {/* Delete button */}
-                        <div className="absolute top-3 right-3 flex gap-2 z-10">
+                      <div className="absolute top-3 right-3 flex gap-2 z-10">
                         <button
-                          onClick={e => {
-                          e.stopPropagation();
-                          handleSaveSession(session);
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleSaveSession(session);
                           }}
                           className={`
                           bg-blue-500 hover:bg-blue-600 
@@ -247,37 +330,33 @@ const handleSaveSession = async (session: HistorySession) => {
                         >
                           <FaSave className="text-xs" />
                         </button>
-                        <button
-                          onClick={e => {
-                          e.stopPropagation();
-                          handleDeleteSession(session.session_id);
-                          }}
-                          className={`
-                          bg-red-500 hover:bg-red-600 
-                          text-white p-2 rounded-full
-                          transition-all duration-300 
-                          hover:scale-110 shadow-lg
-                          opacity-0 group-hover:opacity-100
-                          focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-400
-                          `}
-                          aria-label="Delete session"
+                        <div
+                          onClick={(e) => e.stopPropagation()} // penting!
                         >
-                          <FaTrash className="text-xs" />
-                        </button>
+                          <DeleteSessionDialog
+                            onDelete={() =>
+                              handleDeleteSession(session.session_id)
+                            }
+                          />
                         </div>
+                      </div>
 
                       {/* Session info */}
                       <div className="space-y-3">
                         <div className={`text-sm ${themeStyles.mutedText}`}>
-                          <strong className={themeStyles.subheading}>Waktu:</strong>
+                          <strong className={themeStyles.subheading}>
+                            Waktu:
+                          </strong>
                           <br />
                           <span className="font-mono">
-                            {new Date(session.timestamp).toLocaleString()}
+                            {formatTime(session.timestamp)}
                           </span>
                         </div>
-                        
+
                         <div className={`text-sm ${themeStyles.text}`}>
-                          <strong className={themeStyles.subheading}>Ringkasan:</strong>
+                          <strong className={themeStyles.subheading}>
+                            Ringkasan:
+                          </strong>
                           <p className="mt-2 leading-relaxed line-clamp-4">
                             {getSessionSummary(session.messages)}
                           </p>
@@ -285,13 +364,15 @@ const handleSaveSession = async (session: HistorySession) => {
                       </div>
 
                       {/* Hover indicator */}
-                      <div className={`
+                      <div
+                        className={`
                         absolute bottom-3 right-3 
                         ${themeStyles.subheading} text-lg font-bold
                         opacity-0 group-hover:opacity-100 
                         transition-all duration-300 
                         transform translate-x-2 group-hover:translate-x-0
-                      `}>
+                      `}
+                      >
                         →
                       </div>
                     </div>
@@ -309,15 +390,17 @@ const handleSaveSession = async (session: HistorySession) => {
             width: 8px;
           }
           .custom-scrollbar::-webkit-scrollbar-track {
-            background: ${isDarkMode ? 'rgba(31, 41, 55, 0.3)' : 'rgba(243, 244, 246, 0.3)'};
+            background: ${
+              isDarkMode ? "rgba(31, 41, 55, 0.3)" : "rgba(243, 244, 246, 0.3)"
+            };
             border-radius: 4px;
           }
           .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: ${isDarkMode ? '#fb923c' : '#ea580c'};
+            background: ${isDarkMode ? "#fb923c" : "#ea580c"};
             border-radius: 4px;
           }
           .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: ${isDarkMode ? '#f97316' : '#dc2626'};
+            background: ${isDarkMode ? "#f97316" : "#dc2626"};
           }
           
           @keyframes slide-in {

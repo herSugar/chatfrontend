@@ -120,3 +120,8 @@ export const getUserBookmarks = async (firebaseUid: string) => {
   const res = await api.get(`/api/bookmark/${firebaseUid}`);
   return res.data;
 };
+
+export const deleteUserBookmarks = async (firebaseUid: string, sessionId: string) => {
+  const res = await api.delete(`api/bookmark/${firebaseUid}/${sessionId}`);
+  return res.data;
+};
