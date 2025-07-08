@@ -223,19 +223,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
         <div className="p-3 mt-auto">
           <div className="relative">
             <button
-              onClick={() =>
-                handleItemClick({ id: "profile", label: "Profile", icon: "👤" })
-              }
+              onClick={() => {
+                setActiveItem("profile");
+                navigate("/profile");
+              }}
               className={`
-    relative w-full text-left p-3 rounded-xl cursor-pointer 
-    transition-all duration-300 transform hover:scale-[1.02]
-    flex items-center gap-3 backdrop-blur-sm border
-    ${
-      isDarkMode
-        ? "hover:bg-white/10 border-white/10"
-        : "hover:bg-black/10 border-black/10"
-    } hover:shadow-md
-  `}
+        relative w-full text-left p-3 rounded-xl cursor-pointer 
+        transition-all duration-300 transform hover:scale-[1.02]
+        flex items-center gap-3 backdrop-blur-sm border
+        ${
+          isDarkMode
+            ? "hover:bg-white/10 border-white/10"
+            : "hover:bg-black/10 border-black/10"
+        } hover:shadow-md
+        `}
             >
               {/* Profile image */}
               <img

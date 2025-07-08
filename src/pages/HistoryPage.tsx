@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { FaTrash, FaSave } from "react-icons/fa";
 import { useTheme } from "../components/ThemeWrapper"; // Only need useTheme hook
 import DeleteSessionDialog from "../components/DeleteSessionDialog";
-
+import { toast } from "react-toastify";
 type Message = {
   role: string;
   content: string;
@@ -86,8 +86,9 @@ const HistoryPage: React.FC = () => {
     const sessionId = session.session_id;
 
     if (!token || !firebaseUid) {
-      alert(
-        "Kredensial tidak ditemukan. Silakan login untuk menyimpan ke bookmark."
+      toast.error(
+        "Kredensial tidak ditemukan. Silakan login untuk menyimpan ke bookmark.",
+        { position: "top-center" }
       );
       return;
     }
@@ -116,10 +117,14 @@ const HistoryPage: React.FC = () => {
         throw new Error(err.detail || "Gagal menyimpan bookmark.");
       }
 
-      alert("Sesi berhasil disimpan ke bookmark!");
+      toast.success("Sesi berhasil disimpan ke bookmark!", {
+        position: "top-center",
+      });
     } catch (err) {
       console.error("Gagal menyimpan sesi:", err);
-      alert("Terjadi kesalahan saat menyimpan.");
+      toast.error("Terjadi kesalahan saat menyimpan.", {
+        position: "top-center",
+      });
     }
   };
 
@@ -140,14 +145,18 @@ const HistoryPage: React.FC = () => {
 
       // Panggil API deleteSession dengan 2 argumen
       await deleteSession(firebaseUid, sessionId);
-
+      toast.success("Sesi berhasil dihapus", {
+        position: "top-center",
+      });
       // Perbarui daftar riwayat
       setHistory((prev) =>
         prev.filter((session) => session.session_id !== sessionId)
       );
     } catch (err) {
       console.error("Gagal menghapus sesi:", err);
-      alert("Terjadi kesalahan saat menghapus sesi.");
+      toast.error("Terjadi kesalahan saat menghapus.", {
+        position: "top-center",
+      });
     }
   };
 

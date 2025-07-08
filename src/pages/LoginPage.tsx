@@ -54,20 +54,12 @@ const LoginPage: React.FC = () => {
       const token = await result.user.getIdToken();
       await sendTokenToBackend(token);
       toast.success("Login berhasil!", { position: "top-center" });
+      setTimeout(() => {
+        navigate("/chat");
+      }, 1000); // delay 1 detik agar toast sempat muncul
     } catch (err) {
       console.error("Google login error:", err);
-      toast.error("Login gagal!", { position: "top-center" });
-    }
-  };
-
-  const handleGithubLogin = async () => {
-    try {
-      const provider = new GithubAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      const token = await result.user.getIdToken();
-      await sendTokenToBackend(token);
-    } catch (err) {
-      console.error("GitHub login error:", err);
+      toast.error("Login gagal!", { position: "top-center" });
     }
   };
 
@@ -78,9 +70,14 @@ const LoginPage: React.FC = () => {
       const token = await result.user.getIdToken();
       await sendTokenToBackend(token);
       toast.success("Login berhasil!", { position: "top-center" });
+      setTimeout(() => {
+        navigate("/chat");
+      }, 1000); // delay 1 detik agar toast sempat muncul
     } catch (err) {
       console.error("Email/password login error:", err);
-      toast.error("Login gagal! Email atau password salah.", { position: "top-center" });
+      toast.error("Login gagal! Email atau password salah.", {
+        position: "top-center",
+      });
     }
   };
 
