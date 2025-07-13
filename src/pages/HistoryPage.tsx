@@ -112,14 +112,21 @@ const HistoryPage: React.FC = () => {
         }
       );
 
+      const data = await response.json();
+
       if (!response.ok) {
         const err = await response.json();
         throw new Error(err.detail || "Gagal menyimpan bookmark.");
       }
-
-      toast.success("Sesi berhasil disimpan ke bookmark!", {
-        position: "top-center",
-      });
+      if (data.status === "already_saved") {
+        toast.info("Sesi ini sudah pernah disimpan sebelumnya.", {
+          position: "top-center",
+        });
+      } else {
+        toast.success("Sesi berhasil disimpan ke bookmark!", {
+          position: "top-center",
+        });
+      }
     } catch (err) {
       console.error("Gagal menyimpan sesi:", err);
       toast.error("Terjadi kesalahan saat menyimpan.", {

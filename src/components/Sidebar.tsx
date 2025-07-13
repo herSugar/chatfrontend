@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTheme } from "./ThemeWrapper";
 import ModalLogout from "./ModalLogout";
-import { IconType } from "react-icons";
 import {
   MdChat,
   MdHistory,
@@ -10,13 +9,19 @@ import {
   MdSettings,
   MdAdd,
 } from "react-icons/md";
-//
-import { auth } from "../services/firebaseConfig"; // Adjust the import based on your firebase setup
+import { auth } from "../services/firebaseConfig";
 
 interface SidebarProps {
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  profile: UserProfile; // <-- tambahkan ini
 }
+
+type UserProfile = {
+  email: string;
+  name?: string;
+  picture?: string; // base64 data:image/... string
+};
 
 interface MenuItem {
   id: string;
@@ -30,13 +35,34 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { themeStyles, isDarkMode } = useTheme();
-
   const user = auth.currentUser;
-  const photoURL =
-    user?.photoURL ||
-    `https://ui-avatars.com/api/?name=${user?.displayName || "U"}`;
+
+  // const photoURL =
+  //   user?.photoURL ||
+  //   `https://ui-avatars.com/api/?name=${user?.displayName || "U"}`;
 
   const [showLogout, setShowLogout] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const objectUrl = URL.createObjectURL(file);
+      setPreview(objectUrl);
+    }
+  };
+
+  const handleImageError = () => {
+    setPreview(null);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (preview && preview.startsWith("blob:")) {
+        URL.revokeObjectURL(preview);
+      }
+    };
+  }, [preview]);
 
   useEffect(() => {
     if (location.pathname.startsWith("/chat")) {
@@ -97,28 +123,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
 
   return (
     <div
-      className={`
-        h-full fixed top-0 left-0 z-40
-        transition-all duration-500 ease-in-out
-        ${
-          isCollapsed ? "w-0 opacity-0 pointer-events-none" : "w-64 opacity-100"
-        }
-        backdrop-blur-md
-        ${isDarkMode ? "bg-black/20" : "bg-white/20"}
-        border-r ${isDarkMode ? "border-white/20" : "border-black/20"}
-        shadow-xl
-      `}
+      className={`h-full fixed top-0 left-0 z-40 transition-all duration-500 ease-in-out ${
+        isCollapsed ? "w-0 opacity-0 pointer-events-none" : "w-64 opacity-100"
+      } backdrop-blur-md ${
+        isDarkMode ? "bg-black/20" : "bg-white/20"
+      } border-r ${
+        isDarkMode ? "border-white/20" : "border-black/20"
+      } shadow-xl`}
     >
-      {/* Unified background matching ChatContainer */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {/* Subtle gradient overlay matching chat header */}
         <div
           className={`absolute inset-0 ${
             isDarkMode ? "bg-black/10" : "bg-white/10"
           }`}
         />
-
-        {/* Floating particles for consistency */}
         {[...Array(6)].map((_, i) => (
           <div
             key={i}
@@ -135,9 +153,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
         ))}
       </div>
 
-      {/* Content with consistent styling */}
       <div className="relative z-10 h-full flex flex-col">
-        {/* Logo Section - matches chat header height */}
         <div
           className={`flex items-center justify-center py-6 h-40 border-b ${
             isDarkMode ? "border-white/20" : "border-black/20"
@@ -150,14 +166,12 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
               className="w-30 h-30 rounded-full shadow-lg hover:scale-110 transform transition-all duration-300 cursor-pointer"
               onClick={() => navigate("/")}
             />
-            {/* Subtle glow matching theme */}
             {isDarkMode && (
               <div className="absolute inset-0 rounded-full bg-orange-400/20 blur-sm animate-pulse" />
             )}
           </div>
         </div>
 
-        {/* Menu Items */}
         <div className="flex-1 p-3 overflow-y-auto custom-scrollbar">
           <nav>
             <ul className="space-y-2">
@@ -169,25 +183,19 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
                 >
                   <button
                     onClick={() => handleItemClick(item)}
-                    className={`
-          relative group w-full text-left p-3 rounded-xl cursor-pointer 
-          transition-all duration-300 transform hover:scale-[1.02]
-          flex items-center gap-3
-          backdrop-blur-sm
-          ${
-            activeItem === item.id
-              ? `${
-                  isDarkMode
-                    ? "bg-orange-500/20 border-orange-400/40"
-                    : "bg-orange-100/60 border-orange-500/40"
-                } border shadow-lg`
-              : `${
-                  isDarkMode
-                    ? "hover:bg-white/10 border-white/10"
-                    : "hover:bg-black/10 border-black/10"
-                } border hover:shadow-md`
-          }
-        `}
+                    className={`relative group w-full text-left p-3 rounded-xl cursor-pointer transition-all duration-300 transform hover:scale-[1.02] flex items-center gap-3 backdrop-blur-sm ${
+                      activeItem === item.id
+                        ? `${
+                            isDarkMode
+                              ? "bg-orange-500/20 border-orange-400/40"
+                              : "bg-orange-100/60 border-orange-500/40"
+                          } border shadow-lg`
+                        : `${
+                            isDarkMode
+                              ? "hover:bg-white/10 border-white/10"
+                              : "hover:bg-black/10 border-black/10"
+                          } border hover:shadow-md`
+                    }`}
                   >
                     <span
                       className={`text-lg flex-shrink-0 transition-transform duration-300 group-hover:scale-110 ${themeStyles.text}`}
@@ -218,8 +226,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
             </ul>
           </nav>
         </div>
-        {/* Profile menu fixed di bawah */}
-        {/* Profile menu fixed di bawah */}
+
+        {/* Profile Section */}
         <div className="p-3 mt-auto">
           <div className="relative">
             <button
@@ -227,30 +235,40 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
                 setActiveItem("profile");
                 navigate("/profile");
               }}
-              className={`
-        relative w-full text-left p-3 rounded-xl cursor-pointer 
-        transition-all duration-300 transform hover:scale-[1.02]
-        flex items-center gap-3 backdrop-blur-sm border
-        ${
-          isDarkMode
-            ? "hover:bg-white/10 border-white/10"
-            : "hover:bg-black/10 border-black/10"
-        } hover:shadow-md
-        `}
+              className={`relative w-full text-left p-3 rounded-xl cursor-pointer transition-all duration-300 transform hover:scale-[1.02] flex items-center gap-3 backdrop-blur-sm border ${
+                isDarkMode
+                  ? "hover:bg-white/10 border-white/10"
+                  : "hover:bg-black/10 border-black/10"
+              } hover:shadow-md`}
             >
-              {/* Profile image */}
-              <img
-                src={photoURL}
-                alt="Profile"
-                className="w-7 h-7 rounded-full object-cover border border-white/20"
+              {/* Preview Image */}
+              <label htmlFor="upload-photo" className="cursor-pointer">
+                <img
+                  src={
+                    preview ||
+                    `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                      user?.displayName || "User"
+                    )}&size=200&background=${
+                      isDarkMode ? "374151" : "f3f4f6"
+                    }&color=${isDarkMode ? "ffffff" : "000000"}`
+                  }
+                  alt={user?.displayName || "User"}
+                  className="w-7 h-7 rounded-full object-cover border border-white/20"
+                  onError={handleImageError}
+                />
+              </label>
+              <input
+                id="upload-photo"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
               />
 
-              {/* Label */}
               <span className={`font-medium truncate ${themeStyles.text}`}>
                 Profile
               </span>
 
-              {/* Icon titik tiga */}
               <button
                 onClick={(e) => {
                   e.stopPropagation();
@@ -262,22 +280,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
               </button>
             </button>
 
-            {/* Dropdown Logout ke samping kanan */}
             {showLogout && (
-              <div
-                className={`
-          absolute left-full top-1/2 -translate-y-1/2 ml-2 z-50 
-          bg-red-500/20 border border-red-400/40 rounded-xl 
-          shadow-lg p-3 backdrop-blur-sm min-w-[120px]
-        `}
-              >
+              <div className="absolute left-full top-1/2 -translate-y-1/2 ml-2 z-50 bg-red-500/20 border border-red-400/40 rounded-xl shadow-lg p-3 backdrop-blur-sm min-w-[120px]">
                 <ModalLogout />
               </div>
             )}
           </div>
         </div>
 
-        {/* Footer decoration */}
         <div
           className={`p-3 border-t ${
             isDarkMode ? "border-white/20" : "border-black/20"
@@ -291,7 +301,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
         </div>
       </div>
 
-      {/* Custom scrollbar styles matching ChatContainer */}
+      {/* Custom Scrollbar + Animation */}
       <style>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
@@ -309,7 +319,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: ${isDarkMode ? "#f97316" : "#dc2626"};
         }
-        
         @keyframes slide-in {
           from {
             opacity: 0;
@@ -320,7 +329,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isCollapsed, onToggleCollapse }) => {
             transform: translateX(0);
           }
         }
-        
         .animate-slide-in {
           animation: slide-in 0.3s ease-out forwards;
         }

@@ -18,6 +18,7 @@ const RegisterPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { themeStyles, isDarkMode } = useTheme();
 
@@ -33,6 +34,9 @@ const RegisterPage: React.FC = () => {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError("");
+
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -51,7 +55,6 @@ const RegisterPage: React.FC = () => {
     } catch (err: any) {
       console.error("Register gagal:", err);
 
-      // Jika user sempat dibuat tapi backend gagal, hapus user
       const currentUser = auth.currentUser;
       if (currentUser) {
         try {
@@ -62,6 +65,8 @@ const RegisterPage: React.FC = () => {
       }
 
       setError(err.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -78,13 +83,15 @@ const RegisterPage: React.FC = () => {
 
   return (
     <div className="flex justify-center items-center min-h-screen px-4 py-8">
-      <div className={`relative group ${themeStyles.mainBox} rounded-2xl p-8 w-full max-w-md z-30 border-2 transition-all duration-300 hover:scale-105 animate-slide-in`}>
-        {/* Card glow effect */}
+      <div
+        className={`relative group ${themeStyles.mainBox} rounded-2xl p-8 w-full max-w-md z-30 border-2 transition-all duration-300 hover:scale-105 animate-slide-in`}
+      >
         <div className={themeStyles.buttonGlow} />
-        
-        {/* Card content */}
+
         <div className="relative z-10">
-          <h1 className={`text-3xl font-bold text-center mb-2 ${themeStyles.heading}`}>
+          <h1
+            className={`text-3xl font-bold text-center mb-2 ${themeStyles.heading}`}
+          >
             Create Your Account
           </h1>
           <p className={`text-center mb-8 ${themeStyles.mutedText}`}>
@@ -111,9 +118,9 @@ const RegisterPage: React.FC = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className={`w-full px-4 py-3 rounded-lg border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent ${
-                  isDarkMode 
-                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
-                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                  isDarkMode
+                    ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
                 }`}
                 placeholder="Enter your username"
                 required
@@ -133,9 +140,9 @@ const RegisterPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={`w-full px-4 py-3 rounded-lg border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent ${
-                  isDarkMode 
-                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
-                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                  isDarkMode
+                    ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
                 }`}
                 placeholder="Enter your email"
                 required
@@ -155,9 +162,9 @@ const RegisterPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={`w-full px-4 py-3 rounded-lg border-2 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent ${
-                  isDarkMode 
-                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
-                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                  isDarkMode
+                    ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                    : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
                 }`}
                 placeholder="Enter your password"
                 required
@@ -167,18 +174,48 @@ const RegisterPage: React.FC = () => {
             <div className="flex justify-end">
               <button
                 type="submit"
-                className={`relative group px-8 py-3 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-opacity-50 ${themeStyles.button} border-2`}
+                disabled={isLoading}
+                className={`relative group px-8 py-3 rounded-lg font-medium transition-all duration-300 transform ${
+                  isLoading
+                    ? "cursor-not-allowed opacity-70"
+                    : "hover:scale-105"
+                } focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-opacity-50 ${
+                  themeStyles.button
+                } border-2`}
               >
                 <div className={themeStyles.buttonOverlay} />
-                <span className="relative z-10">Register</span>
+                <span className="relative z-10 flex items-center gap-2">
+                  {isLoading && (
+                    <svg
+                      className="animate-spin h-4 w-4 text-white"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                        fill="none"
+                      />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                      />
+                    </svg>
+                  )}
+                  {isLoading ? "Registering..." : "Register"}
+                </span>
               </button>
             </div>
           </form>
 
           <div className={`mt-6 text-center ${themeStyles.mutedText}`}>
             Already have an account?{" "}
-            <a 
-              href="/login" 
+            <a
+              href="/login"
               className={`font-medium hover:underline transition-colors duration-200 ${themeStyles.subheading}`}
             >
               Log in
@@ -186,9 +223,21 @@ const RegisterPage: React.FC = () => {
           </div>
 
           <div className="relative flex py-6 items-center">
-            <div className={`flex-grow border-t ${isDarkMode ? 'border-gray-600' : 'border-gray-300'}`}></div>
-            <span className={`flex-shrink mx-4 ${themeStyles.mutedText}`}>Or</span>
-            <div className={`flex-grow border-t ${isDarkMode ? 'border-gray-600' : 'border-gray-300'}`}></div>
+            <div
+              className={`flex-grow border-t ${
+                isDarkMode ? "border-gray-600" : "border-gray-300"
+              }`}
+            ></div>
+
+            <span className={`flex-shrink mx-4 ${themeStyles.mutedText}`}>
+              Or
+            </span>
+
+            <div
+              className={`flex-grow border-t ${
+                isDarkMode ? "border-gray-600" : "border-gray-300"
+              }`}
+            ></div>
           </div>
 
           <button
@@ -204,7 +253,5 @@ const RegisterPage: React.FC = () => {
     </div>
   );
 };
-
-
 
 export default RegisterPage;

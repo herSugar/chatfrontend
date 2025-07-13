@@ -45,6 +45,7 @@ import ChatWithImage from "./pages/ChatWithImage";
 import { ThemeWrapper } from "./components/ThemeWrapper"; // Adjust path as needed
 import BookmarkPage from "./pages/BookmarkPage";
 import ProfilePage from "./pages/Profilepage";
+import PrivateRoute from "./components/PrivateRoute"; // Adjust path as needed
 
 const App: React.FC = () => {
   return (
@@ -54,15 +55,64 @@ const App: React.FC = () => {
           <ToastContainer />
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/chat" element={<ChatPage />} />
-            <Route path="/chat/:sessionId" element={<ChatPage />} />
+            <Route
+              path="/chat"
+              element={
+                <PrivateRoute>
+                  <ChatPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/chat/:sessionId"
+              element={
+                <PrivateRoute>
+                  <ChatPage />
+                </PrivateRoute>
+              }
+            />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
-            <Route path="/history" element={<HistoryPage />} />
-            <Route path="/settings" element={<SettingPages />} />
-            <Route path="/image" element={<ChatWithImage />} />
-            <Route path="/bookmark" element={<BookmarkPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route
+              path="/history"
+              element={
+                <PrivateRoute>
+                  <HistoryPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <PrivateRoute>
+                  <SettingPages />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/image"
+              element={
+                <PrivateRoute>
+                  <ChatWithImage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/bookmark"
+              element={
+                <PrivateRoute>
+                  <BookmarkPage />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <PrivateRoute>
+                  <ProfilePage />
+                </PrivateRoute>
+              }
+            />
           </Routes>
         </div>
       </Router>
